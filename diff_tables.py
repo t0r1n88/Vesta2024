@@ -5,9 +5,6 @@ from support_functions import write_df_to_excel # импорт функции п
 import pandas as pd
 from tkinter import filedialog
 from tkinter import messagebox
-import openpyxl
-from openpyxl.utils.dataframe import dataframe_to_rows
-from openpyxl.utils import get_column_letter
 import time
 import warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')

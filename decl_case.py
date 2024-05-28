@@ -3,9 +3,6 @@
 """
 
 from support_functions import write_df_to_excel
-import openpyxl
-from openpyxl.utils.dataframe import dataframe_to_rows
-from openpyxl.utils import get_column_letter
 import pandas as pd
 from tkinter import messagebox
 

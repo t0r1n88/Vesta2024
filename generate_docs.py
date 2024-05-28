@@ -4,8 +4,6 @@
 
 import pandas as pd
 import numpy as np
-import os
-from dateutil.parser import ParserError
 from docxtpl import DocxTemplate
 from docxcompose.composer import Composer
 from docx import Document
@@ -331,7 +329,7 @@ if __name__ == '__main__':
     name_file_template_doc_main = 'data/Создание документов/Пример Шаблон согласия.docx'
     name_file_data_doc_main = 'data/Создание документов/Таблица для заполнения согласия.xlsx'
     path_to_end_folder_doc_main = 'data/result'
-    mode_combine_main = 'Yes'
+    mode_combine_main = 'No'
     mode_group_main = 'No'
 
     generate_docs_from_template(name_column_main, name_type_file_main, name_value_column_main, mode_pdf_main, name_file_template_doc_main,

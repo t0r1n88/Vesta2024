@@ -1,9 +1,6 @@
 """
 Вспомогательные функции
 """
-import pandas as pd
-from tkinter import filedialog
-from tkinter import messagebox
 import openpyxl
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.utils import get_column_letter

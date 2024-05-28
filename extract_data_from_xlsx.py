@@ -2,8 +2,6 @@
 Извлечение данных из файлов Excel со сложной структурой
 """
 import os
-
-from support_functions import write_df_to_excel # импорт функции по записи в файл с автошириной колонок
 import pandas as pd
 from tkinter import messagebox
 import openpyxl
