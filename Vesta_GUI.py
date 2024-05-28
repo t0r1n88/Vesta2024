@@ -712,7 +712,7 @@ def open_license():
 
 if __name__ == '__main__':
     window = Tk()
-    window.title('Веста Обработка таблиц и создание документов ver 1.50')
+    window.title('Веста Обработка таблиц и создание документов ver 1.51')
     # Устанавливаем размер и положение окна
     set_window_size(window)
     # window.geometry('774x760')
