@@ -1557,8 +1557,9 @@ if __name__ == '__main__':
     about_frame_description.pack()
 
     lbl_about = Label(about_frame_description,
-                           text="""Веста - Простая утилита для обработки таблиц и создания однотипных документов
+                           text="""Веста - Утилита для обработки таблиц и создания однотипных документов
                            Версия 1.51
+                           Язык программирования - Python
                            Copyright ©️2024- Олег Будаев
                            https://itdarhan.ru
                            """, width=60)
@@ -1575,15 +1576,23 @@ if __name__ == '__main__':
     dop_library_license_frame_description = LabelFrame(tab_about,text='Дополнительные авторские права')
     dop_library_license_frame_description.pack()
 
-    text = Text(dop_library_license_frame_description, width=60, height=30)
+    text_area = Text(dop_library_license_frame_description, width=84, height=20)
+    lib_license_path = resource_path('LibraryLicense.txt')  # путь к файлу лицензии
+    with open(lib_license_path, 'r', encoding='utf-8') as file:
+        text = file.read()
+        text_area.insert(END, text)
+    text_area.configure(state='disabled')
+    text_area.pack(side=LEFT)
 
-    text.configure(state='disabled')
-    text.pack(side=LEFT)
-
-    scroll = Scrollbar(dop_library_license_frame_description, command=text.yview)
+    scroll = Scrollbar(dop_library_license_frame_description,command=text_area.yview)
     scroll.pack(side=LEFT, fill=Y)
 
-    text.config(yscrollcommand=scroll.set)
+    text_area.config(yscrollcommand=scroll.set)
+
+    text_area.configure(state='disabled')
+    text_area.pack(side=LEFT)
+
+
 
 
 
