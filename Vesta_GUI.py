@@ -759,18 +759,6 @@ if __name__ == '__main__':
           image=img_preparation, padx=10, pady=10
           ).pack(side=LEFT, anchor=E, ipadx=5, ipady=5)
 
-    # Создаем кнопку вывода сообщения о программе
-    btn_about = Button(preparation_frame_description, text='О программе', font=('Arial Bold', 14),
-                                  command=select_prep_file)
-    btn_about.pack(side=TOP, anchor=N,padx=10, pady=10)
-
-    # Создаем кнопку вывода сообщения о программе
-    btn_help = Button(preparation_frame_description, text='Руководство', font=('Arial Bold', 14),
-                                  command=select_prep_file)
-    btn_help.pack(side=TOP, anchor=N,padx=10, pady=10)
-
-
-
 
     # Создаем область для того чтобы поместить туда подготовительные кнопки(выбрать файл,выбрать папку и т.п.)
     frame_data_prep = LabelFrame(tab_preparation, text='Подготовка')
