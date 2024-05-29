@@ -346,6 +346,8 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str):
         df.columns = list(map(str,list(df.columns))) # делаем названия колонок строкововыми
         # очищаем все строковые значения от пробелов в начале и конце
         df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+        # заменяем пробельные символы на пробел, чтобы убрать лишние пробелы
+        df = df.applymap(lambda x: re.sub(r'\s+', ' ', x) if isinstance(x, str) else x)
         # обрабатываем колонки с фио
         part_fio_columns = ['фамилия','имя','отчество','фио'] # колонки с типичными названиями
         df = prepare_fio_text_columns(df,part_fio_columns) # очищаем колонки с фио
