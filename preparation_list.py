@@ -335,11 +335,37 @@ def prepare_email_columns(df:pd.DataFrame,second_option:str)->pd.DataFrame:
     return df
 
 
-def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str):
+def check_mixing(value:str):
+    """
+    Функция для проверки слова на смешение алфавитов
+    """
+    russian_letters = re.compile(r'[а-яА-ЯёЁ]')  # регулярка для русских букв
+    english_letters = re.compile(r'[a-zA-Z]')  # регулярка для английских букв
+    if re.search(russian_letters,value) and re.search(english_letters,value):
+        return False
+    else:
+        return True
+
+def find_mixing_alphabets(cell):
+    """
+    Функция для нахождения случаев смешения когда английские буквы используются в русском слове и наоборот
+    """
+    if isinstance(cell,str):
+        lst_word = cell.split() # делим по пробелам
+        res = list(map(check_mixing,lst_word))
+        if not all(res):
+            return f'Найдено смешение русского и английского внутри слова: {cell}'
+        else:
+            return cell
+    else:
+        return cell
+
+def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mix_alphabets:str):
     """
     file_data : путь к файлу который нужно преобразовать
     path_end_folder :  путь к конечной папке
     checkbox_dupl: Проверять на дубликаты или нет. Yes or No
+    checkbox_mix_alphabets: Проверять на смешение русских и английских букв или нет. Yes or No
     """
     try:
         df = pd.read_excel(file_data,dtype=str) # считываем датафрейм
@@ -414,6 +440,44 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str):
             del wb
             gc.collect()
 
+        if checkbox_mix_alphabets == 'Yes':
+            mix_df = df.copy() # делаем копию базового датафрейма
+            mix_df = mix_df.astype(str) # делаем его строковым
+            mix_df = mix_df.applymap(find_mixing_alphabets) # ищем смешения
+
+            check_word = 'Найдено смешение русского и английского внутри слова:' # фраза по которой будет производится отбор
+            lst_name_columns = list(mix_df.columns)  # получаем список колонок
+            used_name_sheet = []  # список для хранения значений которые уже были использованы
+            if len(lst_name_columns) >= 253:  # проверяем количество колонок которые могут созданы
+                raise ExceedingQuantity
+            #
+            wb_mix = openpyxl.Workbook(write_only=True)  # создаем файл
+            for idx, value in enumerate(lst_name_columns):
+                temp_df = mix_df[mix_df[value].str.contains(check_word)]  # получаем строки где есть сочетание
+                if temp_df.shape[0] == 0:
+                    continue
+
+                short_value = value[:20]  # получаем обрезанное значение
+                short_value = re.sub(r'[\r\b\n\t\[\]\'+()<> :"?*|\\/]', '_', short_value)
+
+                if short_value in used_name_sheet:
+                    short_value = f'{short_value}_{idx}'  # добавляем окончание
+                wb_mix.create_sheet(short_value, index=idx)  # создаем лист
+                used_name_sheet.append(short_value)
+
+                temp_df = temp_df.sort_values(by=value)
+                #     # Добавляем +2 к индексу чтобы отобразить точную строку
+                temp_df.insert(0, '№ строки смешения ', list(map(lambda x: x + 2, list(temp_df.index))))
+
+                for row in dataframe_to_rows(temp_df, index=False, header=True):
+                    wb_mix[short_value].append(row)
+
+            wb_mix.save(f'{path_end_folder}/Смешения в каждой колонке {current_time}.xlsx')
+            # очищаем
+            wb_mix.close()
+            del wb_mix
+            gc.collect()
+
         # сохраняем
 
         dct_df = {'Лист1': df}
@@ -444,9 +508,10 @@ if __name__ == '__main__':
     # file_data_main = 'data/Обработка списка/Список студентов военкомат.xlsx'
     file_data_main = 'data/Обработка списка/Список студентов военкомат.xlsx'
     path_end_main = 'data'
-    checkbox_main = 'Yes'
+    checkbox_main_dupl = 'Yes'
+    checkbox_main_mix_alphabets = 'Yes'
     start_time = time.time()
-    prepare_list(file_data_main,path_end_main,checkbox_main)
+    prepare_list(file_data_main,path_end_main,checkbox_main_dupl,checkbox_main_mix_alphabets)
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Время выполнения: {execution_time} секунд")
