@@ -559,7 +559,8 @@ def processing_preparation_file():
     try:
         # name_sheet = var_name_sheet_prep.get() # получаем название листа
         checkbox_dupl = mode_dupl_value.get()
-        prepare_list(glob_prep_file, glob_path_to_end_folder_prep, checkbox_dupl)
+        checkbox_mix_alphabets = mode_mix_alphabets.get()
+        prepare_list(glob_prep_file, glob_path_to_end_folder_prep, checkbox_dupl,checkbox_mix_alphabets)
 
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
@@ -788,6 +789,21 @@ if __name__ == '__main__':
                                   offvalue='No',
                                   onvalue='Yes')
     chbox_mode_dupl.pack(padx=10, pady=10)
+
+    # Создаем переменную для хранения результа переключения чекбокса поиска смешения
+    mode_mix_alphabets = StringVar()
+
+    # Устанавливаем значение по умолчанию для этой переменной. По умолчанию будет вестись подсчет числовых данных
+    mode_mix_alphabets.set('No')
+    # Создаем чекбокс для выбора режима подсчета
+
+    chbox_mode_mix_alphabets = Checkbutton(frame_data_prep,
+                                  text='Проверить каждую ячейку таблицы на смешение русских и английских букв',
+                                  variable=mode_mix_alphabets,
+                                  offvalue='No',
+                                  onvalue='Yes')
+    chbox_mode_mix_alphabets.pack(padx=10, pady=10)
+
 
     # Создаем кнопку очистки
     btn_choose_processing_prep = Button(tab_preparation, text='3) Выполнить обработку', font=('Arial Bold', 20),

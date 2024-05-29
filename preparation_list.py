@@ -73,7 +73,7 @@ def find_english_letter(value):
     result = re.findall(r'[a-zA-Z]',value)
     if result:
         english_let = ';'.join(result)
-        return f'Обнаружены символы латиницы: {english_let} в слове {value}'
+        return f'Обнаружены символы английского алфавита: {english_let} в слове {value}'
     else:
         return value
 
@@ -96,7 +96,6 @@ def prepare_fio_text_columns(df:pd.DataFrame,lst_columns:list)->pd.DataFrame:
     df[prepared_columns_lst] = df[prepared_columns_lst].applymap(lambda x: x.strip() if isinstance(x, str) else x)  # применяем strip, чтобы все данные корректно вставлялись
     df[prepared_columns_lst] = df[prepared_columns_lst].applymap(lambda x:' '.join(x.split())) # убираем лишние пробелы между словами
     df[prepared_columns_lst] = df[prepared_columns_lst].applymap(capitalize_fio)  # делаем заглавными первые буквы слов а остальыне строчными
-    df[prepared_columns_lst] = df[prepared_columns_lst].applymap(find_english_letter)  # делаем заглавными первые буквы слов а остальыне строчными
 
     return df
 
@@ -339,12 +338,23 @@ def check_mixing(value:str):
     """
     Функция для проверки слова на смешение алфавитов
     """
-    russian_letters = re.compile(r'[а-яА-ЯёЁ]')  # регулярка для русских букв
-    english_letters = re.compile(r'[a-zA-Z]')  # регулярка для английских букв
-    if re.search(russian_letters,value) and re.search(english_letters,value):
-        return False
+    # ищем буквы русского и английского алфавита
+    russian_letters = re.findall(r'[а-яА-ЯёЁ]',value)
+    english_letters = re.findall(r'[a-zA-Z]',value)
+    # если найдены и те и те
+    if russian_letters and english_letters:
+        # если русских букв больше то указываем что в русском слове встречаются английские буквы
+        if len(russian_letters) > len(english_letters):
+            return (f'В слове {value} найдены английские буквы: {",".join(english_letters)}')
+        elif len(russian_letters) < len(english_letters):
+            # если английских букв больше то указываем что в английском слове встречаются русские буквы
+            return (f'В слове {value} найдены русские буквы: {",".join(russian_letters)}')
+        else:
+            # если букв поровну то просто выводим их список
+            return (f'В слове {value} найдены русские буквы: {",".join(russian_letters)} и английские буквы: {";".join(english_letters)}')
     else:
-        return True
+        # если слово состоит из букв одного алфавита
+        return False
 
 def find_mixing_alphabets(cell):
     """
@@ -352,9 +362,10 @@ def find_mixing_alphabets(cell):
     """
     if isinstance(cell,str):
         lst_word = cell.split() # делим по пробелам
-        res = list(map(check_mixing,lst_word))
-        if not all(res):
-            return f'Найдено смешение русского и английского внутри слова: {cell}'
+        lst_result = list(map(check_mixing,lst_word)) # ищем смешения
+        lst_result = [value for value in lst_result if value] # отбираем найденые смешения если они есть
+        if lst_result:
+            return f'В тексте {cell} найдено смешение русского и английского: {"; ".join(lst_result)}'
         else:
             return cell
     else:
@@ -400,6 +411,10 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
         # очищаем email от пробельных символов
         second_option = 'e-mail' # слова электрон и почта используются внутри функции
         df = prepare_email_columns(df,second_option)
+
+        # Ищем смешение английских и русских букв
+        df = df.applymap(find_mixing_alphabets)  # ищем смешения
+
         # получаем время
         t = time.localtime()
         current_time = time.strftime('%H_%M_%S', t)
@@ -441,19 +456,15 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
             gc.collect()
 
         if checkbox_mix_alphabets == 'Yes':
-            mix_df = df.copy() # делаем копию базового датафрейма
-            mix_df = mix_df.astype(str) # делаем его строковым
-            mix_df = mix_df.applymap(find_mixing_alphabets) # ищем смешения
-
-            check_word = 'Найдено смешение русского и английского внутри слова:' # фраза по которой будет производится отбор
-            lst_name_columns = list(mix_df.columns)  # получаем список колонок
+            check_word = 'найдено смешение русского и английского:' # фраза по которой будет производится отбор
+            lst_name_columns = list(df.columns)  # получаем список колонок
             used_name_sheet = []  # список для хранения значений которые уже были использованы
             if len(lst_name_columns) >= 253:  # проверяем количество колонок которые могут созданы
                 raise ExceedingQuantity
             #
             wb_mix = openpyxl.Workbook(write_only=True)  # создаем файл
             for idx, value in enumerate(lst_name_columns):
-                temp_df = mix_df[mix_df[value].str.contains(check_word)]  # получаем строки где есть сочетание
+                temp_df = df[df[value].str.contains(check_word)]  # получаем строки где есть сочетание
                 if temp_df.shape[0] == 0:
                     continue
 
@@ -472,7 +483,7 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
                 for row in dataframe_to_rows(temp_df, index=False, header=True):
                     wb_mix[short_value].append(row)
 
-            wb_mix.save(f'{path_end_folder}/Смешения в каждой колонке {current_time}.xlsx')
+            wb_mix.save(f'{path_end_folder}/Смешения русских и английских букв в словах {current_time}.xlsx')
             # очищаем
             wb_mix.close()
             del wb_mix
