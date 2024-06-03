@@ -112,6 +112,11 @@ Library for developers to extract data from Microsoft Excel (tm) .xls spreadshee
 xlrd  http://www.python-excel.org/
 BSD License
 
+A Python module for creating Excel XLSX files.
+XlsxWriter  https://github.com/jmcnamara/XlsxWriter
+BSD-2-Clause
+
+
 Backport of pathlib-compatible object wrapper for zip files
 zipp https://pypi.org/project/zipp/
 MIT license

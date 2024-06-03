@@ -26,4 +26,5 @@ six==1.16.0
 tqdm==4.66.4
 typing_extensions==4.12.0
 xlrd==2.0.1
+XlsxWriter==3.2.0
 zipp==3.19.0

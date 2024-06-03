@@ -1580,7 +1580,7 @@ if __name__ == '__main__':
                            Версия 1.51
                            Язык программирования - Python 3
                            Copyright ©️2024- Олег Будаев
-                           https://itdarhan.ru/vesta.html
+                           Адрес сайта программы: https://itdarhan.ru/vesta.html
                            """, width=60)
 
     lbl_about.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
@@ -1592,7 +1592,7 @@ if __name__ == '__main__':
           ).pack(side=LEFT, anchor=E, ipadx=5, ipady=5)
 
     # Создаем поле для лицензий библиотек
-    dop_library_license_frame_description = LabelFrame(tab_about,text='Дополнительные авторские права')
+    dop_library_license_frame_description = LabelFrame(tab_about,text='Дополнительные библиотеки Python')
     dop_library_license_frame_description.pack()
 
     text_area = Text(dop_library_license_frame_description, width=84, height=20)

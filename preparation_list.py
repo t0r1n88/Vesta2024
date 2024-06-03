@@ -340,39 +340,31 @@ def check_mixing(value:str):
     """
     Функция для проверки слова на смешение алфавитов
     """
-    if '-' not in value:
-        # ищем буквы русского и английского алфавита
-        russian_letters = re.findall(r'[а-яА-ЯёЁ]',value)
-        english_letters = re.findall(r'[a-zA-Z]',value)
-        # если найдены и те и те
-        if russian_letters and english_letters:
-            # если русских букв больше то указываем что в русском слове встречаются английские буквы
-            if len(russian_letters) > len(english_letters):
-                return (f'В слове {value} найдены английские буквы: {",".join(english_letters)}')
-            elif len(russian_letters) < len(english_letters):
-                # если английских букв больше то указываем что в английском слове встречаются русские буквы
-                return (f'В слове {value} найдены русские буквы: {",".join(russian_letters)}')
-            else:
-                # если букв поровну то просто выводим их список
-                return (f'В слове {value} найдены русские буквы: {",".join(russian_letters)} и английские буквы: {";".join(english_letters)}')
+    # ищем буквы русского и английского алфавита
+    russian_letters = re.findall(r'[а-яА-ЯёЁ]',value)
+    english_letters = re.findall(r'[a-zA-Z]',value)
+    # если найдены и те и те
+    if russian_letters and english_letters:
+        # если русских букв больше то указываем что в русском слове встречаются английские буквы
+        if len(russian_letters) > len(english_letters):
+            return (f'В слове {value} найдены английские буквы: {",".join(english_letters)}')
+        elif len(russian_letters) < len(english_letters):
+            # если английских букв больше то указываем что в английском слове встречаются русские буквы
+            return (f'В слове {value} найдены русские буквы: {",".join(russian_letters)}')
         else:
-            # если слово состоит из букв одного алфавита
-            return False
+            # если букв поровну то просто выводим их список
+            return (f'В слове {value} найдены русские буквы: {",".join(russian_letters)} и английские буквы: {";".join(english_letters)}')
     else:
-        dash_lst = value.split('-') # делим по дефису
-        lst_result_dash = list(map(check_mixing,dash_lst)) # ищем смешения
-        lst_result_dash = [value for value in lst_result_dash if value] # отбираем найденые смешения если они есть
-        if lst_result_dash:
-            return f' {"; ".join(lst_result_dash)}'
-        else:
-            return False
+        # если слово состоит из букв одного алфавита
+        return False
+
 
 def find_mixing_alphabets(cell):
     """
     Функция для нахождения случаев смешения когда английские буквы используются в русском слове и наоборот
     """
     if isinstance(cell,str):
-        lst_word = cell.split() # делим по пробелам
+        lst_word = re.split(r'\W',cell) # делим по не буквенным символам
         lst_result = list(map(check_mixing,lst_word)) # ищем смешения
         lst_result = [value for value in lst_result if value] # отбираем найденые смешения если они есть
         if lst_result:
