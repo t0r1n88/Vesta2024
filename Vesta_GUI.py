@@ -1578,8 +1578,9 @@ if __name__ == '__main__':
     lbl_about = Label(about_frame_description,
                            text="""Веста - Утилита для обработки таблиц и создания однотипных документов
                            Версия 1.51
-                           Язык программирования - Python 3
-                           Copyright ©️2024- Олег Будаев
+                           Язык программирования - Python 3\n
+                           Используемая лицензия BSD-2-Clause\n
+                           Copyright (c) <2024> <Будаев Олег Тимурович>
                            Адрес сайта программы: https://itdarhan.ru/vesta.html
                            """, width=60)
 
