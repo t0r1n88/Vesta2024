@@ -53,6 +53,7 @@ def counting_by_category(name_file_data_groupby,path_to_end_folder_groupby):
 
         # Добавляем столбец для облегчения подсчета по категориям
         df['Для подсчета'] = 1
+        df.fillna('Не заполнено',inplace=True)
 
         # Создаем листы
         for idx, name_column in enumerate(df.columns):
