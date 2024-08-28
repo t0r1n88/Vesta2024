@@ -560,7 +560,7 @@ def processing_preparation_file():
         # name_sheet = var_name_sheet_prep.get() # получаем название листа
         checkbox_dupl = mode_dupl_value.get()
         checkbox_mix_alphabets = mode_mix_alphabets.get()
-        prepare_list(glob_prep_file, glob_path_to_end_folder_prep, checkbox_dupl,checkbox_mix_alphabets)
+        prepare_list(glob_prep_file, glob_path_to_end_folder_prep, checkbox_dupl, checkbox_mix_alphabets)
 
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
@@ -685,6 +685,7 @@ def set_window_size(window):
     # Устанавливаем размер и положение окна
     window.geometry(f"{width}x{height}+{x}+{y}")
 
+
 """
 Создание нового окна
 """
@@ -696,7 +697,7 @@ def open_license():
 
     # Настройка нового окна
     new_window.title("Лицензия")
-    text_area = Text(new_window,width=90, height=50)
+    text_area = Text(new_window, width=90, height=50)
 
     with open(license_path, 'r', encoding='utf-8') as file:
         text = file.read()
@@ -704,10 +705,11 @@ def open_license():
     text_area.configure(state='normal')
     text_area.pack(side=LEFT)
 
-    scroll = Scrollbar(new_window,command=text_area.yview)
+    scroll = Scrollbar(new_window, command=text_area.yview)
     scroll.pack(side=LEFT, fill=Y)
 
     text_area.config(yscrollcommand=scroll.set)
+
 
 def open_libraries():
     # Создание нового окна
@@ -715,7 +717,7 @@ def open_libraries():
 
     # Настройка нового окна
     new_window.title("Дополнительные библиотеки Python")
-    text_area = Text(new_window,width=90, height=50)
+    text_area = Text(new_window, width=90, height=50)
 
     with open(license_library, 'r', encoding='utf-8') as file:
         text = file.read()
@@ -723,11 +725,10 @@ def open_libraries():
     text_area.configure(state='normal')
     text_area.pack(side=LEFT)
 
-    scroll = Scrollbar(new_window,command=text_area.yview)
+    scroll = Scrollbar(new_window, command=text_area.yview)
     scroll.pack(side=LEFT, fill=Y)
 
     text_area.config(yscrollcommand=scroll.set)
-
 
 
 if __name__ == '__main__':
@@ -769,8 +770,8 @@ if __name__ == '__main__':
                                        'Создание списка дубликатов по каждой колонке.\n'
                                        'Поиск со смешаным написанием русских и английских букв.\n'
                                        'ПРИМЕЧАНИЯ\n'
-                                       'Заголовок таблицы должен занимать только первую строку!\n'
                                        'Данные обрабатываются С ПЕРВОГО ЛИСТА В ФАЙЛЕ !!!\n'
+                                       'Заголовок таблицы должен занимать только первую строку!\n'
                                        'Для корректной работы программы уберите из таблицы\nобъединенные ячейки',
                                   width=60)
     lbl_hello_preparation.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
@@ -781,7 +782,6 @@ if __name__ == '__main__':
     Label(preparation_frame_description,
           image=img_preparation, padx=10, pady=10
           ).pack(side=LEFT, anchor=E, ipadx=5, ipady=5)
-
 
     # Создаем область для того чтобы поместить туда подготовительные кнопки(выбрать файл,выбрать папку и т.п.)
     frame_data_prep = LabelFrame(tab_preparation, text='Подготовка')
@@ -819,12 +819,11 @@ if __name__ == '__main__':
     # Создаем чекбокс для выбора режима подсчета
 
     chbox_mode_mix_alphabets = Checkbutton(frame_data_prep,
-                                  text='Проверить каждую ячейку таблицы на смешение русских и английских букв',
-                                  variable=mode_mix_alphabets,
-                                  offvalue='No',
-                                  onvalue='Yes')
+                                           text='Проверить каждую ячейку таблицы на смешение русских и английских букв',
+                                           variable=mode_mix_alphabets,
+                                           offvalue='No',
+                                           onvalue='Yes')
     chbox_mode_mix_alphabets.pack(padx=10, pady=10)
-
 
     # Создаем кнопку очистки
     btn_choose_processing_prep = Button(tab_preparation, text='3) Выполнить обработку', font=('Arial Bold', 20),
@@ -843,9 +842,12 @@ if __name__ == '__main__':
 
     lbl_hello_split_tables = Label(split_tables_frame_description,
                                    text='Разделение таблицы Excel по листам и файлам\n'
-                                        'Для корректной работы программы уберите из таблицы\nобъединенные ячейки\n'
+                                        'ПРИМЕЧАНИЯ\n'
                                         'Данные обрабатываются С ПЕРВОГО ЛИСТА В ФАЙЛЕ !!!\n'
-                                        'Заголовок таблицы должен занимать ОДНУ СТРОКУ\n и в нем не должно быть объединенных ячеек!',
+                                        'Заголовок таблицы должен занимать только первую строку!\n'
+
+                                        'Для корректной работы программы уберите из таблицы\nобъединенные ячейки'
+                                   ,
                                    width=60)
     lbl_hello_split_tables.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
 
@@ -911,9 +913,12 @@ if __name__ == '__main__':
     create_doc_frame_description.pack()
 
     lbl_hello = Label(create_doc_frame_description,
-                      text='Генерация документов по шаблону'
-                           '\nДля корректной работы программы уберите из таблицы\nобъединенные ячейки'
-                           '\nДанные обрабатываются только с первого листа файла Excel!!!', width=60)
+                      text='Генерация документов по шаблону\n'
+                           'ПРИМЕЧАНИЯ\n'
+                           'Данные обрабатываются С ПЕРВОГО ЛИСТА В ФАЙЛЕ !!!\n'
+                           'Заголовок таблицы должен занимать только первую строку!\n'
+                           'Для корректной работы программы уберите из таблицы\nобъединенные ячейки'
+                      , width=60)
     lbl_hello.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
     # #
     # #
@@ -1044,9 +1049,12 @@ if __name__ == '__main__':
     calculate_date_frame_description.pack()
 
     lbl_hello_calculate_date = Label(calculate_date_frame_description,
-                                     text='Подсчет по категориям,выделение месяца,года\nподсчет текущего возраста'
-                                          '\nДля корректной работы программы уберите из таблицы\n объединенные ячейки'
-                                          '\nДанные обрабатываются только с первого листа файла Excel!!!', width=60)
+                                     text='Подсчет по категориям,выделение месяца,года\nподсчет текущего возраста\n'
+                                          'ПРИМЕЧАНИЯ\n'
+                                          'Данные обрабатываются С ПЕРВОГО ЛИСТА В ФАЙЛЕ !!!\n'
+                                          'Заголовок таблицы должен занимать только первую строку!\n'
+                                          'Для корректной работы программы уберите из таблицы\nобъединенные ячейки',
+                                     width=60)
     lbl_hello_calculate_date.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
     # #
     # #
@@ -1106,8 +1114,12 @@ if __name__ == '__main__':
     groupby_data_frame_description.pack()
 
     lbl_hello_groupby_data = Label(groupby_data_frame_description,
-                                   text='Для корректной работы программы уберите из таблицы\n объединенные ячейки'
-                                        '\nДанные обрабатываются только с первого листа файла Excel!!!', width=60)
+                                   text='Подсчет по всем колонкам таблицы базовых статистик и категорий\n'
+                                        'ПРИМЕЧАНИЯ\n'
+                                        'Данные обрабатываются только с первого листа файла Excel!!!\n'
+                                        'Заголовок таблицы должен занимать только первую строку!\n'
+                                        'Для корректной работы программы уберите из таблицы\n объединенные ячейки'
+                                   , width=60)
     lbl_hello_groupby_data.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
     # Картинка
     path_to_img_groupby_data = resource_path('logo.png')
@@ -1154,7 +1166,10 @@ if __name__ == '__main__':
     comparison_frame_description.pack()
 
     lbl_hello_comparison = Label(comparison_frame_description,
-                                 text='Для корректной работы программы уберите из таблицы\nобъединенные ячейки',
+                                 text='Соединение 2 таблиц по совпадающим значениям.\nПоиск значений которые есть в обоих таблицах или только в одной.\n'
+                                      'ПРИМЕЧАНИЕ\n'
+                                      'Заголовок таблиц должен занимать только первую строку!\n'
+                                      'Для корректной работы программы уберите из таблицы\nобъединенные ячейки',
                                  width=60)
     lbl_hello_comparison.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
     # Картинка
@@ -1297,7 +1312,8 @@ if __name__ == '__main__':
 
     lbl_hello_merger_tables = Label(merger_tables_frame_description,
                                     text='Слияние файлов Excel с одинаковой структурой'
-                                         '\nДля корректной работы программы уберите из таблицы\n объединенные ячейки',
+                                         'ПРИМЕЧАНИЕ\n'
+                                         'Для корректной работы программы уберите из таблицы\n объединенные ячейки',
                                     width=60)
 
     lbl_hello_merger_tables.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
@@ -1379,7 +1395,13 @@ if __name__ == '__main__':
     decl_by_cases_frame_description.pack()
 
     lbl_hello_decl_by_cases = Label(decl_by_cases_frame_description,
-                                    text='Для корректной работы программы уберите из таблицы\n объединенные ячейки',
+                                    text='Склонение выбранной колонки с ФИО по падежам\n'
+                                         'Создание инициалов и инициалов склоненных по падежам\n'
+                                         'ПРИМЕЧАНИЯ\n'
+                                         'Данные обрабатываются только с первого листа файла Excel!!!\n'
+                                         'Заголовок таблицы должен занимать только первую строку!\n'
+                                         'Для корректной работы программы уберите из таблицы\n объединенные ячейки'
+                                    ,
                                     width=60)
 
     lbl_hello_decl_by_cases.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
@@ -1433,9 +1455,12 @@ if __name__ == '__main__':
     diffrence_frame_description.pack()
 
     lbl_hello_diffrence = Label(diffrence_frame_description,
-                                text='Количество строк и колонок в таблицах должно совпадать\n'
-                                     'Названия колонок в таблицах должны совпадать'
-                                     '\nДля корректной работы программы уберите из таблицы\n объединенные ячейки',
+                                text='Поиск отличий в двух таблицах\n'
+                                     'ВАЖНО Количество строк и колонок в таблицах должно совпадать\n'
+                                     'ВАЖНО Названия колонок в таблицах должны совпадать\n'
+                                     'ПРИМЕЧАНИЯ\n'
+                                     'Заголовок таблицы должен занимать только первую строку!\n'
+                                     'Для корректной работы программы уберите из таблицы\n объединенные ячейки',
                                 width=60)
 
     lbl_hello_diffrence.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
@@ -1512,8 +1537,10 @@ if __name__ == '__main__':
                            text='Создание сводных таблиц: Сумма,Среднее,Медиана,Минимум\n'
                                 'Максимум,Количество,Количество уникальных,Самое частое\n'
                                 'Количество самых частых, Количество дубликатов'
-                                '\nДля корректной работы программы уберите из таблицы\n объединенные ячейки\n'
-                                'Заголовок таблицы должен быть на первой строке', width=60)
+                                'ПРИМЕЧАНИЯ\n'
+                                'Заголовок таблицы должен занимать только первую строку!\n'
+                                'Для корректной работы программы уберите из таблицы\n объединенные ячейки'
+                           , width=60)
 
     lbl_hello_svod.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
     # Картинка
@@ -1591,11 +1618,11 @@ if __name__ == '__main__':
     tab_about = ttk.Frame(tab_control)
     tab_control.add(tab_about, text='О ПРОГРАММЕ')
 
-    about_frame_description = LabelFrame(tab_about,text='О программе')
+    about_frame_description = LabelFrame(tab_about, text='О программе')
     about_frame_description.pack()
 
     lbl_about = Label(about_frame_description,
-                           text="""Веста - Программа для обработки таблиц и создания однотипных документов
+                      text="""Веста - Программа для обработки таблиц и создания однотипных документов
                            Версия 1.52
                            Язык программирования - Python 3\n
                            Используемая лицензия BSD-2-Clause\n
@@ -1636,20 +1663,15 @@ if __name__ == '__main__':
     text_area.configure(state='disabled')
     text_area.pack(side=LEFT)
 
-
-
     # Кнопка, для демонстрации в отдельном окне лицензии
-    license_path = resource_path('License.txt') # путь к файлу лицензии
+    license_path = resource_path('License.txt')  # путь к файлу лицензии
     button_lic = Button(tab_about, text="Лицензия", command=open_license)
-    button_lic.pack(padx=10,pady=10)
+    button_lic.pack(padx=10, pady=10)
 
     # Кнопка, для демонстрации в отдельном окне используемых библиотек
-    license_library = resource_path('LibraryLicense.txt') # путь к файлу с библиотеками
+    license_library = resource_path('LibraryLicense.txt')  # путь к файлу с библиотеками
     button_lib = Button(tab_about, text="Дополнительные библиотеки Python", command=open_libraries)
-    button_lib.pack(padx=10,pady=10)
-
-
-
+    button_lib.pack(padx=10, pady=10)
 
     # Создаем виджет для управления полосой прокрутки
     canvas.create_window((0, 0), window=tab_control, anchor="nw")
