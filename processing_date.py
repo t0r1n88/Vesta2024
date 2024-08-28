@@ -2,6 +2,8 @@
 Функция для подсчета текущего возраста и разбиения по возрастным категориям
 """
 import pandas as pd
+import numpy as np
+import datetime
 from tkinter import messagebox
 import openpyxl
 from openpyxl.utils.dataframe import dataframe_to_rows
@@ -72,6 +74,22 @@ def calculate_age(born, raw_selected_date):
         quit()
 
 
+def create_doc_convert_date(cell):
+    """
+    Функция для конвертации даты при создании документов
+    :param cell:
+    :return:
+    """
+    try:
+        if cell is np.nan:
+            return 'Не заполнено'
+        string_date = datetime.datetime.strftime(cell, '%d.%m.%Y')
+        return string_date
+    except ValueError:
+        return f'Неправильное значение - {cell}'
+    except TypeError:
+        return f'Неправильное значение - {cell}'
+
 def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_to_end_folder_date):
     """
    Функция для разбиения по категориям 1-ПК 1-ПО СПО-1, подсчета текущего возраста и выделения месяца,года
@@ -83,12 +101,16 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
     """
 
     try:
-        global name_os # делаем глобальной чтобы проверять месяц
+        global name_os # делаем глобальной, чтобы проверять месяц
         name_os = platform.system()
 
         # Считываем файл
         df = pd.read_excel(name_file_data_date)
-        # Конвертируем его в формат даты
+        # создаем временную колонку которой в конце заменим исходную колонку
+        df['temp'] = pd.to_datetime(df[name_column], dayfirst=True, errors='ignore')
+        df['temp'] = df['temp'].fillna('Пустая ячейка')
+        df['temp'] = df['temp'].apply(lambda x: x.strftime('%d.%m.%Y') if isinstance(x, (pd.Timestamp, datetime.datetime)) and pd.notna(x) else f'Некорректное значение - {str(x)}')
+
         # В случае ошибок заменяем значение NaN
         df[name_column] = pd.to_datetime(df[name_column], dayfirst=True, errors='coerce')
 
@@ -181,6 +203,7 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
         df['Росстат Категория'] = df['Росстат Категория'].astype(str)
         df['Росстат Категория'] = df['Росстат Категория'].replace('nan', 'Ошибочное значение!!!')
 
+
         # Заполняем пустые строки
         df.fillna('Ошибочное значение!!!', inplace=True)
 
@@ -202,7 +225,7 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
         df_svod_by_month.index = pd.CategoricalIndex(df_svod_by_month.index,
                                                      categories=['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
                                                                  'Июль',
-                                                                 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                                                                 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь','Ошибочное значение!!!'],
                                                      ordered=True)
         df_svod_by_month.sort_index(inplace=True)
 
@@ -241,18 +264,22 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
         df_svod_by_Ros = df.groupby(['Росстат Категория']).agg({name_column: 'count'})
         df_svod_by_Ros.columns = ['Количество']
 
+
         # Сортируем индекс
         df_svod_by_Ros.index = pd.CategoricalIndex(df_svod_by_Ros.index,
                                                    categories=['0-4', '5-9', '10-14', '15-19', '20-24', '25-29',
                                                                '30-34',
                                                                '35-39', '40-44', '45-49', '50-54', '55-59', '60-64',
                                                                '65-69',
-                                                               '70 лет и старше', 'nan'],
+                                                               '70 лет и старше', 'Ошибочное значение!!!'],
                                                    ordered=True)
         df_svod_by_Ros.sort_index(inplace=True)
 
         for r in dataframe_to_rows(df_svod_by_Ros, index=True, header=True):
             wb['Свод по категориям Росстата'].append(r)
+
+        df[name_column] = df['temp'] # заменяем временной колонкой
+        df.drop(columns=['temp'],inplace=True)
 
         for r in dataframe_to_rows(df, index=False, header=True):
             wb['Итоговая таблица'].append(r)
