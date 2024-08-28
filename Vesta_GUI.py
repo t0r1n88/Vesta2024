@@ -701,7 +701,26 @@ def open_license():
     with open(license_path, 'r', encoding='utf-8') as file:
         text = file.read()
         text_area.insert(END, text)
-    text_area.configure(state='disabled')
+    text_area.configure(state='normal')
+    text_area.pack(side=LEFT)
+
+    scroll = Scrollbar(new_window,command=text_area.yview)
+    scroll.pack(side=LEFT, fill=Y)
+
+    text_area.config(yscrollcommand=scroll.set)
+
+def open_libraries():
+    # Создание нового окна
+    new_window = Toplevel(window)
+
+    # Настройка нового окна
+    new_window.title("Дополнительные библиотеки Python")
+    text_area = Text(new_window,width=90, height=50)
+
+    with open(license_library, 'r', encoding='utf-8') as file:
+        text = file.read()
+        text_area.insert(END, text)
+    text_area.configure(state='normal')
     text_area.pack(side=LEFT)
 
     scroll = Scrollbar(new_window,command=text_area.yview)
@@ -1576,12 +1595,17 @@ if __name__ == '__main__':
     about_frame_description.pack()
 
     lbl_about = Label(about_frame_description,
-                           text="""Веста - Утилита для обработки таблиц и создания однотипных документов
+                           text="""Веста - Программа для обработки таблиц и создания однотипных документов
                            Версия 1.52
                            Язык программирования - Python 3\n
                            Используемая лицензия BSD-2-Clause\n
                            Copyright (c) <2024> <Будаев Олег Тимурович>
-                           Адрес сайта программы: https://itdarhan.ru/vesta.html
+                           Адрес сайта программы: https://itdarhan.ru/vesta.html\n
+                           Свидетельство о государственной регистрации № 2024660774
+                           \n
+                           Реестровая запись №23439 от 30.07.2024 в реестре 
+                           Российского программного обеспечения
+                            
                            """, width=60)
 
     lbl_about.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
@@ -1593,18 +1617,18 @@ if __name__ == '__main__':
           ).pack(side=LEFT, anchor=E, ipadx=5, ipady=5)
 
     # Создаем поле для лицензий библиотек
-    dop_library_license_frame_description = LabelFrame(tab_about,text='Дополнительные библиотеки Python')
-    dop_library_license_frame_description.pack()
+    guide_frame_description = LabelFrame(tab_about, text='Ссылки для скачивания и обучающие материалы')
+    guide_frame_description.pack()
 
-    text_area = Text(dop_library_license_frame_description, width=84, height=20)
-    lib_license_path = resource_path('LibraryLicense.txt')  # путь к файлу лицензии
+    text_area = Text(guide_frame_description, width=84, height=20)
+    lib_license_path = resource_path('Guide.txt')  # путь к файлу лицензии
     with open(lib_license_path, 'r', encoding='utf-8') as file:
         text = file.read()
         text_area.insert(END, text)
-    text_area.configure(state='disabled')
+    text_area.configure(state='normal')
     text_area.pack(side=LEFT)
 
-    scroll = Scrollbar(dop_library_license_frame_description,command=text_area.yview)
+    scroll = Scrollbar(guide_frame_description, command=text_area.yview)
     scroll.pack(side=LEFT, fill=Y)
 
     text_area.config(yscrollcommand=scroll.set)
@@ -1614,12 +1638,15 @@ if __name__ == '__main__':
 
 
 
-
-
-    # Кнопка, которая вызывает функцию open_new_window
+    # Кнопка, для демонстрации в отдельном окне лицензии
     license_path = resource_path('License.txt') # путь к файлу лицензии
-    button = Button(tab_about, text="Лицензия", command=open_license)
-    button.pack()
+    button_lic = Button(tab_about, text="Лицензия", command=open_license)
+    button_lic.pack(padx=10,pady=10)
+
+    # Кнопка, для демонстрации в отдельном окне используемых библиотек
+    license_library = resource_path('LibraryLicense.txt') # путь к файлу с библиотеками
+    button_lib = Button(tab_about, text="Дополнительные библиотеки Python", command=open_libraries)
+    button_lib.pack(padx=10,pady=10)
 
 
 

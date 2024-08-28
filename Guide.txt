@@ -1,0 +1,25 @@
+Ссылка на свидетельство:
+https://fips.ru/EGD/cb2e55e5-ba89-4ef7-8cd9-68d4d3fb7f2f
+Ссылка на реестр Российского ПО:
+https://reestr.digital.gov.ru/reestr/2556260/?sphrase_id=4832665
+
+Обучающие материалы по программе Веста
+
+Руководство пользователя
+https://itdarhan.ru/files/Руководство%20пользователя%20программы%20Веста.docx
+
+Инструкция по установке и началу работы
+https://itdarhan.ru/files/Инструкция%20по%20установке%20и%20началу%20работы.docx
+
+Данные для примеров
+https://itdarhan.ru/files/Данные%20для%20примера.zip
+
+Ссылки для скачивания
+Windows x64
+https://itdarhan.ru/files/Веста%20для%20Windows%20x64.zip
+
+Windows x32
+https://itdarhan.ru/files/Веста%20для%20Windows%20x32.zip
+
+Linux x64
+https://itdarhan.ru/files/Веста%20для%20Linux%20x64.zip
