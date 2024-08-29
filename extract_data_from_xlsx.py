@@ -87,7 +87,7 @@ def count_files_with_extension(folder_path, extension):
     files = os.listdir(folder_path)
 
     # Считаем количество файлов с заданным разрешением
-    count = sum(1 for file in files if file.endswith(extension))
+    count = sum(1 for file in files if not file.startswith('~$') and file.endswith(extension))
 
     return count
 
@@ -107,17 +107,16 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
         count_errors = 0
         quantity_files = count_files_with_extension(files_calculate_data,'.xlsx')
         current_time = time.strftime('%H_%M_%S')
-        # Состояние чекбокса
+
+        error_df = pd.DataFrame(
+            columns=['Название файла','Описание ошибки'])  # датафрейм для ошибок
 
         # Получаем название обрабатываемого листа
-        name_list_df = pd.read_excel(name_file_params_calculate_data, nrows=2)
+        name_list_df = pd.read_excel(name_file_params_calculate_data, nrows=1)
         name_list = name_list_df['Значение'].loc[0]
 
-        # Получаем количество листов в файле, на случай если название листа не совпадает с правильным
-        quantity_list_in_file = name_list_df['Значение'].loc[1]
-
         # Получаем шаблон с данными, первую строку пропускаем, поскольку название обрабатываемого листа мы уже получили
-        df = pd.read_excel(name_file_params_calculate_data, skiprows=2)
+        df = pd.read_excel(name_file_params_calculate_data, skiprows=1)
 
         # Создаем словарь параметров
         param_dict = dict()
@@ -132,87 +131,87 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
             result_dct = {key: 0 for key, value in param_dict.items()}
 
             # Создаем датафрейм для контроля процесса подсчета и заполняем словарь на основе которого будем делать итоговую таблицу
-
-        check_df = pd.DataFrame(columns=param_dict.keys())
+        check_df = pd.DataFrame(columns=list(param_dict.keys()))
         # Вставляем колонку для названия файла
         check_df.insert(0, 'Название файла', '')
         for file in os.listdir(files_calculate_data):
-            if(file.endswith('.xlsx') and not file.startswith('~$')):
-                name_file = file.split('/')[-1]
+            if not file.startswith('~$') and file.endswith('.xlsx'):
+                name_file = file.split('.xlsx')[0]
                 print(name_file) # обрабатываемый файл
                 # Проверяем чтобы файл не был резервной копией или файлом с другим расширением.
                 if file.startswith('~$'):
                     continue
                 # Создаем словарь для создания строки которую мы будем добавлять в проверочный датафрейм
                 new_row = dict()
-                # Получаем  отбрасываем расширение файла
-                full_name_file = file.split('.')[0]
-                # Получаем имя файла  без пути
-                name_file = full_name_file.split('/')[-1]
-                try:
-
-                    new_row['Название файла'] = name_file
-
-                    wb = openpyxl.load_workbook(f'{files_calculate_data}/{file}')
-                    # Проверяем наличие листа
-                    if name_list in wb.sheetnames:
-                        sheet = wb[name_list]
-                    # проверяем количество листов в файле.Если значение равно 1 то просто берем первый лист, иначе вызываем ошибку
-                    elif quantity_list_in_file == 1:
-                        temp_name = wb.sheetnames[0]
-                        sheet = wb[temp_name]
-                    else:
-                        raise Exception
+                new_row['Название файла'] = name_file # создаем ключ по названию файла
+                wb = openpyxl.load_workbook(f'{files_calculate_data}/{file}') # открываем файл
+                # Проверяем наличие листа
+                if name_list in wb.sheetnames:
+                    sheet = wb[name_list]
+                    # перебираем все указанные адреса ячеек
                     for key, cell in param_dict.items():
-                        result_dct[key] += check_data(sheet[cell].value, mode_text)
+                        result_dct[key] += check_data(sheet[cell].value, mode_text)  # извлекаем данные из ячейки
                         new_row[key] = sheet[cell].value
 
                     temp_df = pd.DataFrame(new_row, index=['temp_index'])
                     check_df = pd.concat([check_df, temp_df], ignore_index=True)
-                    # check_df = check_df.append(new_row, ignore_index=True)
-
-                    count += 1
-                # Ловим исключения
-                except Exception as err:
+                    count += 1 # считаем обработанные файлы
+                else:
+                    # Записываем ошибку
+                    temp_error_df = pd.DataFrame(data=[[f'{file}', f'Среди листов {wb.sheetnames} не найден лист {name_list}'
+                                                        ]],
+                                                 columns=['Название файла',
+                                                          'Описание ошибки'])
+                    error_df = pd.concat([error_df, temp_error_df], axis=0,
+                                                   ignore_index=True)
                     count_errors += 1
-                    with open(f'{path_to_end_folder_calculate_data}/Необработанные файлы {current_time}.txt', 'a',
-                              encoding='utf-8') as f:
-                        f.write(f'Файл {name_file} не обработан!!!\n')
+                    continue
+            else:
+                # Записываем ошибку
+                temp_error_df = pd.DataFrame(
+                    data=[[f'{file}', 'Неверное расширение файла! Обрабатываются только файлы с расширением XLSX!'
+                           ]],
+                    columns=['Название файла',
+                             'Описание ошибки'])
+                error_df = pd.concat([error_df, temp_error_df], axis=0,
+                                     ignore_index=True)
+                count_errors += 1
+
 
         # сохраняем
-
+        error_df.to_excel(f'{path_to_end_folder_calculate_data}/Ошибки {current_time}.xlsx',index=False)
         check_df.to_excel(f'{path_to_end_folder_calculate_data}/Проверка вычисления {current_time}.xlsx', index=False)
 
         # Создание итоговой таблицы результатов подсчета
 
         finish_result = pd.DataFrame()
 
-        finish_result['Наименование показателя'] = result_dct.keys()
-        finish_result['Значение показателя'] = result_dct.values()
-        # Проводим обработку в зависимости от значения переключателя
+        if count !=0:
+            finish_result['Наименование показателя'] = result_dct.keys()
+            finish_result['Значение показателя'] = result_dct.values()
+            # Проводим обработку в зависимости от значения переключателя
+            if mode_text == 'Yes':
+                # Обрабатываем датафрейм считая текстовые данные
+                count_text_df = count_text_value(finish_result)
+                # сохраняем
+                count_text_df.to_excel(
+                    f'{path_to_end_folder_calculate_data}/Подсчет текстовых значений {current_time}.xlsx')
+            else:
+                # сохраняем
 
-        # Получаем текущее время для того чтобы использовать в названии
+                finish_result.to_excel(f'{path_to_end_folder_calculate_data}/Итоговые значения {current_time}.xlsx',
+                                       index=False)
 
-        if mode_text == 'Yes':
-            # Обрабатываем датафрейм считая текстовые данные
-            count_text_df = count_text_value(finish_result)
-            # сохраняем
-
-
-            count_text_df.to_excel(
-                f'{path_to_end_folder_calculate_data}/Подсчет текстовых значений {current_time}.xlsx')
+            if count_errors != 0:
+                messagebox.showinfo('Веста Обработка таблиц и создание документов',
+                                    f'В некоторых файлах обнаружены ошибки!\nОбработано файлов:  {count} из {quantity_files}\n Необработанные файлы указаны в файле {path_to_end_folder_calculate_data}/Ошибки {current_time}.xlsx')
+            else:
+                messagebox.showinfo('Веста Обработка таблиц и создание документов',
+                                    f'Обработка файлов успешно завершена!\nОбработано файлов:  {count} из {quantity_files}')
         else:
-            # сохраняем
+            messagebox.showwarning('Веста Обработка таблиц и создание документов',
+                                f'Обработано {count} из {quantity_files} файлов.\n Причины необработки файлов указаны в файле {path_to_end_folder_calculate_data}/Ошибки {current_time}.xlsx')
 
-            finish_result.to_excel(f'{path_to_end_folder_calculate_data}/Итоговые значения {current_time}.xlsx',
-                                   index=False)
-
-        if count_errors != 0:
-            messagebox.showinfo('Веста Обработка таблиц и создание документов',
-                                f'Обработка файлов завершена!\nОбработано файлов:  {count} из {quantity_files}\n Необработанные файлы указаны в файле {path_to_end_folder_calculate_data}/ERRORS {current_time}.txt ')
-        else:
-            messagebox.showinfo('Веста Обработка таблиц и создание документов',
-                                f'Обработка файлов успешно завершена!\nОбработано файлов:  {count} из {quantity_files}')
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите шаблон,файл с данными и папку куда будут генерироваться файлы')
@@ -226,7 +225,7 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
                              'Возникла ошибка!!! Подробности ошибки в файле error.log')
 
 if __name__ == '__main__':
-    mode_text = 'No'
+    mode_text = 'Yes'
     name_file_params_calculate_data = 'data/Извлечение данных/Анкеты мониторинг профориентации/Параметры для подсчета анкет.xlsx'
     names_files_calculate_data = 'data/Извлечение данных/Анкеты мониторинг профориентации/Школы Мониторинг профориентации'
 
