@@ -44,12 +44,10 @@ def count_text_value(df):
         index_count_values = counts_series.reset_index()
         # Итерируемся по таблице.Это делается чтобы заполнить словарь на основе которого будет создаваться итоговая таблица
         for count_row in index_count_values.itertuples():
-            # print(count_row)
             # Заполняем словарь
             data[(row[1], count_row[1])] = count_row[2]
     # Создаем на основе получившегося словаря таблицу
     out_df = pd.Series(data).to_frame().reset_index()
-    #TODO обработка пустых датафрейма
     out_df = out_df.set_index(['level_0', 'level_1'])
     out_df.index.names = ['Название показателя', 'Вариант показателя']
     out_df.rename(columns={0: 'Количество'}, inplace=True)
@@ -112,7 +110,8 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
             columns=['Название файла','Описание ошибки'])  # датафрейм для ошибок
 
         # Получаем название обрабатываемого листа
-        name_list_df = pd.read_excel(name_file_params_calculate_data, nrows=1)
+        name_list_df = pd.read_excel(name_file_params_calculate_data, nrows=1,usecols='A:B')
+        name_list_df.columns = ['Показатель','Значение']
         name_list = name_list_df['Значение'].loc[0]
 
         # Получаем шаблон с данными, первую строку пропускаем, поскольку название обрабатываемого листа мы уже получили
@@ -150,8 +149,30 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
                     sheet = wb[name_list]
                     # перебираем все указанные адреса ячеек
                     for key, cell in param_dict.items():
-                        result_dct[key] += check_data(sheet[cell].value, mode_text)  # извлекаем данные из ячейки
-                        new_row[key] = sheet[cell].value
+                        try:
+                            result_dct[key] += check_data(sheet[cell].value, mode_text)  # извлекаем данные из ячейки
+                            new_row[key] = sheet[cell].value
+                        except ValueError:
+                            temp_error_df = pd.DataFrame(
+                                data=[[f'{file}', f'При извлечении данных показателя {key} из ячейки {cell} возникла ошибка. Проверьте правильность написания адреса ячейки. Правильный адрес это A2,F1211'
+                                       ]],
+                                columns=['Название файла',
+                                         'Описание ошибки'])
+                            error_df = pd.concat([error_df, temp_error_df], axis=0,
+                                                 ignore_index=True)
+                            count_errors += 1
+                            continue
+                        except:
+                            temp_error_df = pd.DataFrame(
+                                data=[[f'{file}',
+                                       f'При извлечении данных показателя {key} из ячейки {cell} возникла неопределенная ошибка'
+                                       ]],
+                                columns=['Название файла',
+                                         'Описание ошибки'])
+                            error_df = pd.concat([error_df, temp_error_df], axis=0,
+                                                 ignore_index=True)
+                            count_errors += 1
+                            continue
 
                     temp_df = pd.DataFrame(new_row, index=['temp_index'])
                     check_df = pd.concat([check_df, temp_df], ignore_index=True)
