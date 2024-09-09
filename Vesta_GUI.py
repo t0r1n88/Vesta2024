@@ -1660,7 +1660,7 @@ if __name__ == '__main__':
 
     text_area.config(yscrollcommand=scroll.set)
 
-    text_area.configure(state='disabled')
+    text_area.configure(state='normal')
     text_area.pack(side=LEFT)
 
     # Кнопка, для демонстрации в отдельном окне лицензии
