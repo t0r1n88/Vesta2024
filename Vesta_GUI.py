@@ -976,6 +976,29 @@ if __name__ == '__main__':
     frame_data_for_options = LabelFrame(tab_create_doc, text='Дополнительные опции')
     frame_data_for_options.pack(padx=10, pady=10)
 
+    # Создаем переменную для хранения переключателя сложного сохранения
+    mode_structure_folder = StringVar()
+    mode_structure_folder.set('No') # по умолчанию сложная структура создаваться не будет
+    chbox_mode_structure_folder = Checkbutton(frame_data_for_options,
+                                       text='Поставьте галочку, если вам нужно чтобы файлы были сохранены по дополнительным папкам',
+                                       variable=mode_structure_folder,
+                                       offvalue='No',
+                                       onvalue='Yes')
+    chbox_mode_structure_folder.pack()
+    # Создаем поле для ввода
+    # Определяем текстовую переменную
+    value_number_column_entry = StringVar()
+    # Описание поля
+    label_number_column = Label(frame_data_for_options,
+                                    text='Введите через запятую не более 2 порядковых номеров колонок по которым будет создаваться структура папок.\n'
+                                         'Например: 4,15')
+    label_number_column.pack()
+    # поле ввода
+    entry_value_number_column = Entry(frame_data_for_options, textvariable=value_number_column_entry, width=30)
+    entry_value_number_column.pack(ipady=5)
+
+
+
     # Создаем переменную для хранения результа переключения чекбокса
     mode_combine_value = StringVar()
 
