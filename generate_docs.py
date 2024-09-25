@@ -146,21 +146,25 @@ def combine_all_docx(filename_master, files_lst,mode_pdf,path_to_end_folder_doc,
             raise NotImplementedError
 
 
-def generate_docs_from_template(name_column,name_type_file,name_value_column,mode_pdf,name_file_template_doc,name_file_data_doc,path_to_end_folder_doc,
-                                mode_combine,mode_group):
+# def generate_docs_from_template(name_column,name_type_file,name_value_column,mode_pdf,name_file_template_doc,name_file_data_doc,path_to_end_folder_doc,
+#                                 mode_combine,mode_group):
+def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_column, name_type_file,path_to_end_folder_doc, name_value_column, mode_pdf,
+                                mode_combine, mode_group,mode_structure_folder,number_structure_folder):
     """
     Функция для создания однотипных документов из шаблона Word и списка Excel
-    :param name_column: название колонки в таблице данные из которой будут использоватьс для создания названий документов
-    :param name_type_file: название создаваемых документов например Согласие,Справка и т.д.
-    :param name_value_column: Значение из колонки name_type_file по которому будет создан единичный документ
-    :param mode_pdf: чекбокс отвечающий за режим работы с pdf если Yes то будет создавать дополнительно pdf документ
     :param name_file_template_doc:путь к файлу шаблону на основе которого будут генерироваться документы
     :param name_file_data_doc: путь к файлу Excel с данными которые подставляются в шаблон
+    :param name_column: название колонки в таблице данные из которой будут использоватьс для создания названий документов
+    :param name_type_file: название создаваемых документов например Согласие,Справка и т.д.
     :param path_to_end_folder_doc: путь к папке куда будут сохраняться файлы
+    :param name_value_column: Значение из колонки name_type_file по которому будет создан единичный документ
+    :param mode_pdf: чекбокс отвечающий за режим работы с pdf если Yes то будет создавать дополнительно pdf документ
     :param mode_combine:чекбокс отвечающий за режим объединения файлов. Если Yes то все документы будут объединены в один
     файл, если No то будет создаваться отдельный документ на каждую строчку исходной таблицы
     :param mode_group: чекбокс отвечающий за режим создания отдельного файла. Если Yes то можно создать один файл по значению
      из колонки name_value_column
+    :param mode_structure_folder: чекбокс отвечающий за создание структуры папок
+    :param number_structure_folder: строка с порядковыми номерами колонок разделенными запятой
     :return: Создает в зависимости от выбранного режима файлы Word из шаблона
     """
     try:
@@ -348,8 +352,10 @@ if __name__ == '__main__':
     path_to_end_folder_doc_main = 'data/result'
     mode_combine_main = 'Yes'
     mode_group_main = 'No'
+    main_mode_structure_folder = 'No'
+    main_structure_folder = '10,22'
 
     generate_docs_from_template(name_column_main, name_type_file_main, name_value_column_main, mode_pdf_main, name_file_template_doc_main,
                                 name_file_data_doc_main, path_to_end_folder_doc_main,
-                                mode_combine_main, mode_group_main)
+                                mode_combine_main, mode_group_main,main_mode_structure_folder,main_structure_folder)
     print('Lindy Booth')
