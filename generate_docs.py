@@ -4,9 +4,11 @@
 
 import pandas as pd
 import numpy as np
+import os
 from docxtpl import DocxTemplate
 from docxcompose.composer import Composer
 from docx import Document
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx2pdf import convert
 from tkinter import messagebox
 from jinja2 import exceptions
@@ -135,11 +137,11 @@ def combine_all_docx(filename_master, files_lst,mode_pdf,path_to_end_folder_doc,
         doc_temp = Document(files_lst[i])
         composer.append(doc_temp)
     # Сохраняем файл
-    composer.save(f"{path_to_end_folder_doc}/Объединеный файл от {current_time}.docx")
+    composer.save(f"{path_to_end_folder_doc}/Объединенный файл от {current_time}.docx")
     if mode_pdf == 'Yes':
         if name_os == 'Windows':
-            convert(f"{path_to_end_folder_doc}/Объединеный файл от {current_time}.docx",
-                f"{path_to_end_folder_doc}/Объединеный файл от {current_time}.pdf", keep_active=True)
+            convert(f"{path_to_end_folder_doc}/Объединенный файл от {current_time}.docx",
+                f"{path_to_end_folder_doc}/Объединенный файл от {current_time}.pdf", keep_active=True)
         else:
             raise NotImplementedError
 
@@ -254,12 +256,22 @@ def generate_docs_from_template(name_column,name_type_file,name_value_column,mod
             if mode_group == 'No':
                 # Список с созданными файлами
                 files_lst = []
+
+                # Добавляем разрыв в шаблон
+                # Открываем шаблон
+                doc_page_break = Document(name_file_template_doc)
+                # Добавляем разрыв страницы
+                doc_page_break.add_page_break()
+                template_page_break_path = os.path.dirname(name_file_template_doc)
+                # Сохраняем изменения в новом файле
+                doc_page_break.save(f'{template_page_break_path}/page_break.docx')
                 # Создаем временную папку
                 with tempfile.TemporaryDirectory() as tmpdirname:
                     print('created temporary directory', tmpdirname)
                     # Создаем и сохраняем во временную папку созданные документы Word
                     for idx,row in enumerate(data):
-                        doc = DocxTemplate(name_file_template_doc)
+                        # Открываем файл
+                        doc = DocxTemplate(f'{template_page_break_path}/page_break.docx')
                         context = row
                         doc.render(context)
                         # Сохраняем файл
@@ -274,6 +286,11 @@ def generate_docs_from_template(name_column,name_type_file,name_value_column,mod
                     main_doc = files_lst.pop(0)
                     # Запускаем функцию
                     combine_all_docx(main_doc, files_lst,mode_pdf,path_to_end_folder_doc,name_os)
+                    # Удаляем файл с разрывом страницы
+                    try:
+                        os.remove(f'{template_page_break_path}/page_break.docx')
+                    except OSError as e:
+                        print("Ошибка при попытке удаления файла: {}".format(e))
             else:
                 raise CheckBoxException
 
@@ -329,7 +346,7 @@ if __name__ == '__main__':
     name_file_template_doc_main = 'data/Создание документов/Пример Шаблон согласия.docx'
     name_file_data_doc_main = 'data/Создание документов/Таблица для заполнения согласия.xlsx'
     path_to_end_folder_doc_main = 'data/result'
-    mode_combine_main = 'No'
+    mode_combine_main = 'Yes'
     mode_group_main = 'No'
 
     generate_docs_from_template(name_column_main, name_type_file_main, name_value_column_main, mode_pdf_main, name_file_template_doc_main,
