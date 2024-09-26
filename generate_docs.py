@@ -364,7 +364,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
             # очищаем строку от лишних символов и превращаем в список номеров колонок
             lst_number_column_folder_structure = prepare_entry_str(number_structure_folder, r'[^\d,]', '', ',')
             # проверяем длину списка не более 2 и не равно 0
-            if len(lst_number_column_folder_structure) == 0 or len(lst_number_column_folder_structure) > 2:
+            if len(lst_number_column_folder_structure) == 0 or len(lst_number_column_folder_structure) > 3:
                 raise NoMoreNumberColumn
             # проверяем чтобы номер колонки не превышал количество колонок в датафрейме
             for number_column in lst_number_column_folder_structure:
@@ -401,6 +401,8 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                 name_file = name_file[:threshold_name]  # ограничиваем название файла
                                 # Сохраняем файл
                                 save_result_file(finish_path, name_file, doc, idx, mode_pdf,name_os)
+                        else:
+                            raise CheckBoxException
                     else:
                         if mode_group == 'No':
                             # Список с созданными файлами
@@ -485,6 +487,8 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                     name_file = name_file[:threshold_name]  # ограничиваем название файла
                                     # Сохраняем файл
                                     save_result_file(finish_path, name_file, doc, idx, mode_pdf, name_os)
+                            else:
+                                raise CheckBoxException
                         else:
                             if mode_group == 'No':
                                 # Список с созданными файлами
@@ -526,6 +530,101 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                         print("Ошибка при попытке удаления файла: {}".format(e))
                             else:
                                 raise CheckBoxException
+            if len(lst_number_column_folder_structure) == 3:
+                # Если нужно создавать трехуровневую структуру Например Школа-Класс-буква класса
+                # получаем названия колонок для трех уровней
+                name_first_layer_column = df.columns[lst_number_column_folder_structure[0]]
+                name_second_layer_column = df.columns[lst_number_column_folder_structure[1]]
+                name_third_layer_column = df.columns[lst_number_column_folder_structure[2]]
+
+                lst_unique_value_first_layer = df[
+                    name_first_layer_column].unique()  # получаем список уникальных значений
+                for first_name_folder in lst_unique_value_first_layer:
+                    clean_first_name_folder = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_',
+                                                     first_name_folder)  # очищаем название от лишних символов
+
+                    # получаем отфильтрованный датафрейм по значениям колонки первого уровня
+                    temp_df_first_layer = df[df[name_first_layer_column] == first_name_folder]  # фильтруем по названию
+                    lst_unique_value_second_layer = temp_df_first_layer[
+                        name_second_layer_column].unique()  # получаем список уникальных значений второго уровня
+                    # фильтруем по значениям колонки второго уровня
+                    for second_name_folder in lst_unique_value_second_layer:
+                        temp_df_second_layer = temp_df_first_layer[
+                            temp_df_first_layer[name_second_layer_column] == second_name_folder]
+                        clean_second_name_folder = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_',
+                                                          second_name_folder)  # очищаем название от лишних символов
+                        lst_unique_value_third_layer = temp_df_second_layer[
+                            name_third_layer_column].unique()  # получаем список уникальных значений третьего уровня
+                        for third_name_folder in lst_unique_value_third_layer:
+                            clean_third_name_folder = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_',
+                                                             third_name_folder)  # очищаем название от лишних символов
+                            temp_df_third_layer = temp_df_second_layer[
+                                temp_df_second_layer[name_third_layer_column] == third_name_folder]
+
+                            finish_path = f'{path_to_end_folder_doc}/{clean_first_name_folder}/{clean_second_name_folder}/{clean_third_name_folder}'
+                            if not os.path.exists(finish_path):
+                                os.makedirs(finish_path)
+
+                            data = temp_df_third_layer.to_dict('records')  # конвертируем в список словарей
+                            if mode_combine == 'No':
+                                if mode_group == 'No':
+                                    # Создаем в цикле документы
+                                    for idx, row in enumerate(data):
+                                        doc = DocxTemplate(name_file_template_doc)
+                                        context = row
+                                        doc.render(context)
+                                        name_file = f'{name_type_file} {row[name_column]}'
+                                        name_file = re.sub(r'[<> :"?*|\\/]', ' ', name_file)
+                                        threshold_name = 200 - (len(finish_path) + 10)
+                                        if threshold_name <= 0:  # если путь к папке слишком длинный вызываем исключение
+                                            raise OSError
+                                        name_file = name_file[:threshold_name]  # ограничиваем название файла
+                                        # Сохраняем файл
+                                        save_result_file(finish_path, name_file, doc, idx, mode_pdf, name_os)
+                                else:
+                                    raise CheckBoxException
+                            else:
+                                if mode_group == 'No':
+                                    # Список с созданными файлами
+                                    files_lst = []
+
+                                    # Добавляем разрыв в шаблон
+                                    # Открываем шаблон
+                                    doc_page_break = Document(name_file_template_doc)
+                                    # Добавляем разрыв страницы
+                                    doc_page_break.add_page_break()
+                                    template_page_break_path = os.path.dirname(name_file_template_doc)
+                                    # Сохраняем изменения в новом файле
+                                    doc_page_break.save(f'{template_page_break_path}/page_break.docx')
+                                    # Создаем временную папку
+                                    with tempfile.TemporaryDirectory() as tmpdirname:
+                                        print('created temporary directory', tmpdirname)
+                                        # Создаем и сохраняем во временную папку созданные документы Word
+                                        for idx, row in enumerate(data):
+                                            # Открываем файл
+                                            doc = DocxTemplate(f'{template_page_break_path}/page_break.docx')
+                                            context = row
+                                            doc.render(context)
+                                            # Сохраняем файл
+                                            # очищаем от запрещенных символов
+                                            name_file = f'{row[name_column]}'
+                                            name_file = re.sub(r'[\r\b\n\t<> :"?*|\\/]', '_', name_file)
+
+                                            doc.save(f'{tmpdirname}/{name_file[:80]}_{idx}.docx')
+                                            # Добавляем путь к файлу в список
+                                            files_lst.append(f'{tmpdirname}/{name_file[:80]}_{idx}.docx')
+                                        # Получаем базовый файл
+                                        main_doc = files_lst.pop(0)
+                                        # Запускаем функцию
+                                        combine_all_docx(main_doc, files_lst, mode_pdf, finish_path, name_os)
+                                        # Удаляем файл с разрывом страницы
+                                        try:
+                                            os.remove(f'{template_page_break_path}/page_break.docx')
+                                        except OSError as e:
+                                            print("Ошибка при попытке удаления файла: {}".format(e))
+                                else:
+                                    raise CheckBoxException
+
 
 
 
@@ -580,8 +679,8 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
     except NoMoreNumberColumn:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Проверьте количество введенных порядковых номеров колонок.\n'
-                             f'Не более 2 чисел разделенных запятыми.\n'
-                             f'Например 3,12'
+                             f'Не более 3 чисел разделенных запятыми.\n'
+                             f'Например 3,12,8'
 
                              )
     except:
@@ -600,10 +699,10 @@ if __name__ == '__main__':
     name_file_template_doc_main = 'data/Создание документов/Пример Шаблон согласия.docx'
     name_file_data_doc_main = 'data/Создание документов/Таблица для заполнения согласия.xlsx'
     path_to_end_folder_doc_main = 'data/result'
-    mode_combine_main = 'Yes'
+    mode_combine_main = 'No'
     mode_group_main = 'No'
     main_mode_structure_folder = 'Yes'
-    main_structure_folder = '14,23'
+    main_structure_folder = '10,22,25'
 
     generate_docs_from_template(name_file_template_doc_main,name_file_data_doc_main,name_column_main, name_type_file_main, path_to_end_folder_doc_main,
                                 name_value_column_main, mode_pdf_main,

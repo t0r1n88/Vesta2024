@@ -991,8 +991,8 @@ if __name__ == '__main__':
     entry_structure_folder_value = StringVar()
     # Описание поля
     label_number_column = Label(frame_data_for_options,
-                                    text='Введите через запятую не более 2 порядковых номеров колонок по которым будет создаваться структура папок.\n'
-                                         'Например: 4,15')
+                                    text='Введите через запятую не более 3 порядковых номеров колонок по которым будет создаваться структура папок.\n'
+                                         'Например: 4,15,8')
     label_number_column.pack()
     # поле ввода
     entry_value_number_column = Entry(frame_data_for_options, textvariable=entry_structure_folder_value, width=30)
