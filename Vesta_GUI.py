@@ -1097,7 +1097,8 @@ if __name__ == '__main__':
     entry_date = StringVar()
     # Описание поля
     label_name_date_field = Label(calculate_date_frame_action,
-                                  text='Введите  дату в формате XX.XX.XXXX\n относительно, которой нужно подсчитать текущий возраст')
+                                  text='Введите  дату в формате XX.XX.XXXX\n относительно, которой нужно подсчитать текущий возраст\n'
+                                       'Например 25.12.2024')
     label_name_date_field.pack(padx=10, pady=10)
     # поле ввода
     date_field = Entry(calculate_date_frame_action, textvariable=entry_date, width=30)

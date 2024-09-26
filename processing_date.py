@@ -224,7 +224,7 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
 
 
         # Заполняем пустые строки
-        df.fillna('Ошибочное значение!!!', inplace=True)
+        df[['Текущий возраст','Совершеннолетие','Порядковый номер месяца рождения','Название месяца рождения','Год рождения',]] = df[['Текущий возраст','Совершеннолетие','Порядковый номер месяца рождения','Название месяца рождения','Год рождения',]].fillna('Ошибочное значение!!!')
 
         # заполняем сводные таблицы
         # Количество совершенолетних
@@ -305,6 +305,7 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
 
         df[name_column] = df['temp'] # заменяем временной колонкой
         df.drop(columns=['temp'],inplace=True)
+
 
         for r in dataframe_to_rows(df, index=False, header=True):
             wb['Итоговая таблица'].append(r)
