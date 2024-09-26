@@ -401,6 +401,47 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                 name_file = name_file[:threshold_name]  # ограничиваем название файла
                                 # Сохраняем файл
                                 save_result_file(finish_path, name_file, doc, idx, mode_pdf,name_os)
+                    else:
+                        if mode_group == 'No':
+                            # Список с созданными файлами
+                            files_lst = []
+
+                            # Добавляем разрыв в шаблон
+                            # Открываем шаблон
+                            doc_page_break = Document(name_file_template_doc)
+                            # Добавляем разрыв страницы
+                            doc_page_break.add_page_break()
+                            template_page_break_path = os.path.dirname(name_file_template_doc)
+                            # Сохраняем изменения в новом файле
+                            doc_page_break.save(f'{template_page_break_path}/page_break.docx')
+                            # Создаем временную папку
+                            with tempfile.TemporaryDirectory() as tmpdirname:
+                                print('created temporary directory', tmpdirname)
+                                # Создаем и сохраняем во временную папку созданные документы Word
+                                for idx, row in enumerate(data):
+                                    # Открываем файл
+                                    doc = DocxTemplate(f'{template_page_break_path}/page_break.docx')
+                                    context = row
+                                    doc.render(context)
+                                    # Сохраняем файл
+                                    # очищаем от запрещенных символов
+                                    name_file = f'{row[name_column]}'
+                                    name_file = re.sub(r'[\r\b\n\t<> :"?*|\\/]', '_', name_file)
+
+                                    doc.save(f'{tmpdirname}/{name_file[:80]}_{idx}.docx')
+                                    # Добавляем путь к файлу в список
+                                    files_lst.append(f'{tmpdirname}/{name_file[:80]}_{idx}.docx')
+                                # Получаем базовый файл
+                                main_doc = files_lst.pop(0)
+                                # Запускаем функцию
+                                combine_all_docx(main_doc, files_lst, mode_pdf, finish_path, name_os)
+                                # Удаляем файл с разрывом страницы
+                                try:
+                                    os.remove(f'{template_page_break_path}/page_break.docx')
+                                except OSError as e:
+                                    print("Ошибка при попытке удаления файла: {}".format(e))
+                        else:
+                            raise CheckBoxException
 
 
 
@@ -469,7 +510,7 @@ if __name__ == '__main__':
     name_file_template_doc_main = 'data/Создание документов/Пример Шаблон согласия.docx'
     name_file_data_doc_main = 'data/Создание документов/Таблица для заполнения согласия.xlsx'
     path_to_end_folder_doc_main = 'data/result'
-    mode_combine_main = 'No'
+    mode_combine_main = 'Yes'
     mode_group_main = 'No'
     main_mode_structure_folder = 'Yes'
     main_structure_folder = '23'
