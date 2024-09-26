@@ -443,6 +443,96 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                         else:
                             raise CheckBoxException
 
+            if len(lst_number_column_folder_structure) == 2:
+                # Создаем папки для двухзначной структуры
+                name_first_layer_column = df.columns[lst_number_column_folder_structure[0]]
+                name_second_layer_column = df.columns[lst_number_column_folder_structure[1]]
+
+                lst_unique_value_first_layer = df[
+                    name_first_layer_column].unique()  # получаем список уникальных значений
+                for first_name_folder in lst_unique_value_first_layer:
+                    clean_first_name_folder = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_',
+                                                     first_name_folder)  # очищаем название от лишних символов
+
+                    # получаем отфильтрованный датафрейм по значениям колонки первого уровня
+                    temp_df_first_layer = df[df[name_first_layer_column] == first_name_folder]  # фильтруем по названию
+                    lst_unique_value_second_layer = temp_df_first_layer[
+                        name_second_layer_column].unique()  # получаем список уникальных значений
+                    # фильтруем по значениям колонки второго уровня
+                    for second_name_folder in lst_unique_value_second_layer:
+                        temp_df_second_layer = temp_df_first_layer[
+                            temp_df_first_layer[name_second_layer_column] == second_name_folder]
+                        clean_second_name_folder = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_',
+                                                          second_name_folder)  # очищаем название от лишних символов
+
+                        finish_path = f'{path_to_end_folder_doc}/{clean_first_name_folder}/{clean_second_name_folder}'
+                        if not os.path.exists(finish_path):
+                            os.makedirs(finish_path)
+
+                        data = temp_df_second_layer.to_dict('records')  # конвертируем в список словарей
+                        if mode_combine == 'No':
+                            if mode_group == 'No':
+                                # Создаем в цикле документы
+                                for idx, row in enumerate(data):
+                                    doc = DocxTemplate(name_file_template_doc)
+                                    context = row
+                                    doc.render(context)
+                                    name_file = f'{name_type_file} {row[name_column]}'
+                                    name_file = re.sub(r'[<> :"?*|\\/]', ' ', name_file)
+                                    threshold_name = 200 - (len(finish_path) + 10)
+                                    if threshold_name <= 0:  # если путь к папке слишком длинный вызываем исключение
+                                        raise OSError
+                                    name_file = name_file[:threshold_name]  # ограничиваем название файла
+                                    # Сохраняем файл
+                                    save_result_file(finish_path, name_file, doc, idx, mode_pdf, name_os)
+                        else:
+                            if mode_group == 'No':
+                                # Список с созданными файлами
+                                files_lst = []
+
+                                # Добавляем разрыв в шаблон
+                                # Открываем шаблон
+                                doc_page_break = Document(name_file_template_doc)
+                                # Добавляем разрыв страницы
+                                doc_page_break.add_page_break()
+                                template_page_break_path = os.path.dirname(name_file_template_doc)
+                                # Сохраняем изменения в новом файле
+                                doc_page_break.save(f'{template_page_break_path}/page_break.docx')
+                                # Создаем временную папку
+                                with tempfile.TemporaryDirectory() as tmpdirname:
+                                    print('created temporary directory', tmpdirname)
+                                    # Создаем и сохраняем во временную папку созданные документы Word
+                                    for idx, row in enumerate(data):
+                                        # Открываем файл
+                                        doc = DocxTemplate(f'{template_page_break_path}/page_break.docx')
+                                        context = row
+                                        doc.render(context)
+                                        # Сохраняем файл
+                                        # очищаем от запрещенных символов
+                                        name_file = f'{row[name_column]}'
+                                        name_file = re.sub(r'[\r\b\n\t<> :"?*|\\/]', '_', name_file)
+
+                                        doc.save(f'{tmpdirname}/{name_file[:80]}_{idx}.docx')
+                                        # Добавляем путь к файлу в список
+                                        files_lst.append(f'{tmpdirname}/{name_file[:80]}_{idx}.docx')
+                                    # Получаем базовый файл
+                                    main_doc = files_lst.pop(0)
+                                    # Запускаем функцию
+                                    combine_all_docx(main_doc, files_lst, mode_pdf, finish_path, name_os)
+                                    # Удаляем файл с разрывом страницы
+                                    try:
+                                        os.remove(f'{template_page_break_path}/page_break.docx')
+                                    except OSError as e:
+                                        print("Ошибка при попытке удаления файла: {}".format(e))
+                            else:
+                                raise CheckBoxException
+
+
+
+
+
+
+
 
 
 
@@ -513,7 +603,7 @@ if __name__ == '__main__':
     mode_combine_main = 'Yes'
     mode_group_main = 'No'
     main_mode_structure_folder = 'Yes'
-    main_structure_folder = '23'
+    main_structure_folder = '14,23'
 
     generate_docs_from_template(name_file_template_doc_main,name_file_data_doc_main,name_column_main, name_type_file_main, path_to_end_folder_doc_main,
                                 name_value_column_main, mode_pdf_main,
