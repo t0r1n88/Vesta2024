@@ -62,9 +62,7 @@ def calculate_age(born, raw_selected_date):
     """
 
     try:
-        # today = date.today()
         selected_date = pd.to_datetime(raw_selected_date, dayfirst=True)
-        # return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
         return selected_date.year - born.year - ((selected_date.month, selected_date.day) < (born.month, born.day))
 
     except ValueError:
@@ -90,6 +88,24 @@ def create_doc_convert_date(cell):
     except TypeError:
         return f'Неправильное значение - {cell}'
 
+def calculation_maturity(value):
+    """
+    Присвоение признака совершеннолетия
+    :param value: значение
+    :return: совершеннолетний если >=18, несовершеннолетний если от нуля до 18, отрицательный возраст если Текущий_возраст
+     меньше нуля
+    """
+    try:
+        int_value = int(value)
+        if int_value >= 18:
+            return 'совершеннолетний'
+        elif 0 <= int_value < 18:
+            return 'несовершеннолетний'
+        else:
+            return 'отрицательный возраст'
+    except:
+        return None
+
 def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_to_end_folder_date):
     """
    Функция для разбиения по категориям 1-ПК 1-ПО СПО-1, подсчета текущего возраста и выделения месяца,года
@@ -107,7 +123,8 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
         # Считываем файл
         df = pd.read_excel(name_file_data_date)
         # создаем временную колонку которой в конце заменим исходную колонку
-        df['temp'] = pd.to_datetime(df[name_column], dayfirst=True, errors='ignore')
+        # df['temp'] = pd.to_datetime(df[name_column], dayfirst=True, errors='ignore')
+        df['temp'] = df[name_column].apply(lambda x:pd.to_datetime(x,dayfirst=True,errors='ignore'))
         df['temp'] = df['temp'].fillna('Пустая ячейка')
         df['temp'] = df['temp'].apply(lambda x: x.strftime('%d.%m.%Y') if isinstance(x, (pd.Timestamp, datetime.datetime)) and pd.notna(x) else f'Некорректное значение - {str(x)}')
 
@@ -120,18 +137,20 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
         # Переименовываем лист чтобы в итоговом файле не было пустого листа
         ren_sheet = wb['Sheet']
         ren_sheet.title = 'Итоговая таблица'
-
-        # wb.create_sheet(title='Итоговая таблица', index=0)
-        wb.create_sheet(title='Свод по возрастам', index=1)
-        wb.create_sheet(title='Свод по месяцам', index=2)
-        wb.create_sheet(title='Свод по годам', index=3)
-        wb.create_sheet(title='Свод по 1-ПК', index=4)
-        wb.create_sheet(title='Свод по 1-ПО', index=5)
-        wb.create_sheet(title='Свод по СПО-1', index=6)
-        wb.create_sheet(title='Свод по категориям Росстата', index=7)
+        wb.create_sheet(title='Свод сов_несов', index=1)
+        wb.create_sheet(title='Свод по возрастам', index=2)
+        wb.create_sheet(title='Свод по месяцам', index=3)
+        wb.create_sheet(title='Свод по годам', index=4)
+        wb.create_sheet(title='Свод по 1-ПК', index=5)
+        wb.create_sheet(title='Свод по 1-ПО', index=6)
+        wb.create_sheet(title='Свод по СПО-1', index=7)
+        wb.create_sheet(title='Свод по категориям Росстата', index=8)
 
         # Подсчитываем текущий возраст
         df['Текущий возраст'] = df[name_column].apply(lambda x:calculate_age(x, raw_selected_date))
+        # Добавлем признак совершеннолетия
+        df['Совершеннолетие'] = df['Текущий возраст'].apply(calculation_maturity)
+
 
         # Получаем номер месяца
         df['Порядковый номер месяца рождения'] = df[name_column].apply(extract_number_month)
@@ -208,6 +227,12 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
         df.fillna('Ошибочное значение!!!', inplace=True)
 
         # заполняем сводные таблицы
+        # Количество совершенолетних
+        df_svod_by_matur = df.groupby(['Совершеннолетие']).agg({'ФИО': 'count'})
+        df_svod_by_matur.columns = ['Количество']
+        df_svod_by_matur.sort_values(by='Количество',inplace=True,ascending=False)
+        for r in dataframe_to_rows(df_svod_by_matur, index=True, header=True):
+            wb['Свод сов_несов'].append(r)
         # Сводная по возрастам
 
         df_svod_by_age = df.groupby(['Текущий возраст']).agg({name_column: 'count'})
@@ -323,7 +348,7 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
         messagebox.showinfo('Веста Обработка таблиц и создание документов', 'Данные успешно обработаны')
 
 if __name__ == '__main__':
-    raw_selected_date_main = '01.10.2023'
+    raw_selected_date_main = '26.09.2024'
     name_column_main = 'Дата рождения'
     name_file_data_date_main = 'data/Обработка дат/Сгенерированный массив данных для дат.xlsx'
     path_to_end_folder_date_main = 'data'
