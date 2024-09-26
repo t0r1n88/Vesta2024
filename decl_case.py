@@ -65,9 +65,18 @@ def detect_gender(detector, lastname, firstname, middlename):
     """
     Функция для определения гендера слова
     """
-    #     detector = PetrovichGenderDetector() # создаем объект детектора
     try:
         gender_result = detector.detect(lastname=lastname, firstname=firstname, middlename=middlename)
+        return gender_result
+    except StopIteration:  # если не удалось определить то считаем что гендер андрогинный
+        return Gender.ANDROGYNOUS
+
+def detect_gender_two_part(detector, lastname, firstname):
+    """
+    Функция для определения гендера слова если слово состоит из 2 частей например Иванов Иван
+    """
+    try:
+        gender_result = detector.detect(lastname=lastname, firstname=firstname)
         return gender_result
     except StopIteration:  # если не удалось определить то считаем что гендер андрогинный
         return Gender.ANDROGYNOUS
@@ -98,9 +107,22 @@ def decl_on_case(fio: str, case: Case) -> str:
         # Возвращаем результат
         result_fio = f'{case_result_lastname} {case_result_firstname} {case_result_middlename}'
         return result_fio
+    elif len(part_fio) == 2:
+        maker = PetrovichDeclinationMaker()  # создаем объект класса
+        lastname = part_fio[0].capitalize()  # Фамилия
+        firstname = part_fio[1].capitalize()  # Имя
+        # Определяем гендер для корректного склонения
+        detector = PetrovichGenderDetector()  # создаем объект детектора
+        gender = detect_gender_two_part(detector, lastname, firstname)
+        case_result_lastname = case_lastname(maker, lastname, gender, case)  # обрабатываем фамилию
+        case_result_firstname = maker.make(NamePart.FIRSTNAME, gender, case, firstname)
+        case_result_firstname = capitalize_double_name(case_result_firstname)  # обрабатываем случаи двойного имени
+        # Возвращаем результат
+        result_fio = f'{case_result_lastname} {case_result_firstname}'
+        return result_fio
 
     else:
-        return 'Проверьте количество слов, должно быть 3 разделенных пробелами слова'
+        return 'Проверьте количество слов, должно быть 3 или 2 разделенных пробелами слова'
 
 
 def create_initials(cell, checkbox, space):
@@ -124,6 +146,22 @@ def create_initials(cell, checkbox, space):
             else:
                 # И. И. Иванов
                 return f'{lst_fio[1][0].upper()}. {lst_fio[2][0].upper()}. {lst_fio[0]}'
+    elif len(lst_fio) == 2:
+        if checkbox == 'ФИ':
+            if space == 'без пробела':
+                # возвращаем строку вида Иванов И.
+                return f'{lst_fio[0]} {lst_fio[1][0].upper()}.'
+            else:
+                # возвращаем строку с пробелом после имени Иванов И. И.
+                return f'{lst_fio[0]} {lst_fio[1][0].upper()}. '
+
+        else:
+            if space == 'без пробела':
+                # И.Иванов
+                return f'{lst_fio[1][0].upper()}.{lst_fio[0]}'
+            else:
+                # И. Иванов
+                return f'{lst_fio[1][0].upper()}. {lst_fio[0]}'
     else:
         return cell
 
