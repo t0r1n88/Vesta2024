@@ -1689,21 +1689,21 @@ if __name__ == '__main__':
     guide_frame_description = LabelFrame(tab_about, text='Ссылки для скачивания и обучающие материалы')
     guide_frame_description.pack()
 
-    text_area = Text(guide_frame_description, width=84, height=20)
+    text_area_url = Text(guide_frame_description, width=84, height=20)
     list_url_path = resource_path('Ссылки.txt')  # путь к файлу лицензии
     with open(list_url_path, 'r', encoding='utf-8') as file:
         text = file.read()
-        text_area.insert(END, text)
-    text_area.configure(state='normal')
-    text_area.pack(side=LEFT)
+        text_area_url.insert(END, text)
+    text_area_url.configure(state='normal')
+    text_area_url.pack(side=LEFT)
 
-    scroll = Scrollbar(guide_frame_description, command=text_area.yview)
+    scroll = Scrollbar(guide_frame_description, command=text_area_url.yview)
     scroll.pack(side=LEFT, fill=Y)
 
-    text_area.config(yscrollcommand=scroll.set)
+    text_area_url.config(yscrollcommand=scroll.set)
 
-    text_area.configure(state='normal')
-    text_area.pack(side=LEFT)
+    text_area_url.configure(state='normal')
+    text_area_url.pack(side=LEFT)
 
     # Кнопка, для демонстрации в отдельном окне списка изменений
     list_changes_path = resource_path('Список изменений.txt')  # путь к файлу лицензии
