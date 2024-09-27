@@ -690,7 +690,24 @@ def set_window_size(window):
 """
 Создание нового окна
 """
+def open_list_changes():
+    # Создание нового окна
+    new_window = Toplevel(window)
 
+    # Настройка нового окна
+    new_window.title("Список изменений")
+    text_area = Text(new_window, width=90, height=50)
+
+    with open(list_changes_path, 'r', encoding='utf-8') as file:
+        text = file.read()
+        text_area.insert(END, text)
+    text_area.configure(state='normal')
+    text_area.pack(side=LEFT)
+
+    scroll = Scrollbar(new_window, command=text_area.yview)
+    scroll.pack(side=LEFT, fill=Y)
+
+    text_area.config(yscrollcommand=scroll.set)
 
 def open_license():
     # Создание нового окна
@@ -1673,8 +1690,8 @@ if __name__ == '__main__':
     guide_frame_description.pack()
 
     text_area = Text(guide_frame_description, width=84, height=20)
-    lib_license_path = resource_path('Guide.txt')  # путь к файлу лицензии
-    with open(lib_license_path, 'r', encoding='utf-8') as file:
+    list_url_path = resource_path('Ссылки.txt')  # путь к файлу лицензии
+    with open(list_url_path, 'r', encoding='utf-8') as file:
         text = file.read()
         text_area.insert(END, text)
     text_area.configure(state='normal')
@@ -1687,6 +1704,12 @@ if __name__ == '__main__':
 
     text_area.configure(state='normal')
     text_area.pack(side=LEFT)
+
+    # Кнопка, для демонстрации в отдельном окне списка изменений
+    list_changes_path = resource_path('Список изменений.txt')  # путь к файлу лицензии
+    button_list_changes = Button(tab_about, text="Список изменений", command=open_list_changes)
+    button_list_changes.pack(padx=10, pady=10)
+
 
     # Кнопка, для демонстрации в отдельном окне лицензии
     license_path = resource_path('License.txt')  # путь к файлу лицензии
