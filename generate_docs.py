@@ -681,8 +681,10 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                              f'Проверьте количество введенных порядковых номеров колонок.\n'
                              f'Не более 3 чисел разделенных запятыми.\n'
                              f'Например 3,12,8'
-
                              )
+    except OSError:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'Слишком длинный путь к файлу. Выберите конечную папку в корне диска или выберите другие колонки для создания структуры папок')
     except:
         logging.exception('AN ERROR HAS OCCURRED')
         messagebox.showerror('Веста Обработка таблиц и создание документов',
