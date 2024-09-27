@@ -311,7 +311,8 @@ def declension_fio_by_case(fio_column,data_decl_case,path_to_end_folder_decl_cas
                              f'В таблице не найдена указанная колонка {e.args}')
     except ValueError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
-                             f'В таблице нет колонки с таким названием!\nПроверьте написание названия колонки')
+                             f'В таблице присутствуют колонки созданные с помощью функции Склонение ФИО по падежам.\n'
+                             f'Удалите такие колонки. Например Дательный_падеж, Фамилия_инициалы, Инициалы_фамилия_твор_падеж_пробел и т.п. ')
         logging.exception('AN ERROR HAS OCCURRED')
     except FileNotFoundError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
