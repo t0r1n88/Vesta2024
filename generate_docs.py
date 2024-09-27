@@ -386,6 +386,8 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                     finish_path = f'{path_to_end_folder_doc}/{clean_name_folder}'
                     if not os.path.exists(finish_path):
                         os.makedirs(finish_path)
+                    temp_df = temp_df.applymap(
+                        lambda x: str.replace(x, 'Не заполнено', '') if isinstance(x, str) else x)
                     data = temp_df.to_dict('records') # делаем из датафрейма список словарей
 
                     if mode_combine == 'No':
@@ -476,7 +478,8 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                         finish_path = f'{path_to_end_folder_doc}/{clean_first_name_folder}/{clean_second_name_folder}'
                         if not os.path.exists(finish_path):
                             os.makedirs(finish_path)
-
+                        temp_df_second_layer = temp_df_second_layer.applymap(
+                            lambda x: str.replace(x, 'Не заполнено', '') if isinstance(x, str) else x)
                         data = temp_df_second_layer.to_dict('records')  # конвертируем в список словарей
                         if mode_combine == 'No':
                             if mode_group == 'No':
@@ -572,10 +575,13 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                             temp_df_third_layer = temp_df_second_layer[
                                 temp_df_second_layer[name_third_layer_column] == third_name_folder]
 
+
+
                             finish_path = f'{path_to_end_folder_doc}/{clean_first_name_folder}/{clean_second_name_folder}/{clean_third_name_folder}'
                             if not os.path.exists(finish_path):
                                 os.makedirs(finish_path)
-
+                            # заменяем перед записью документа Не заполнено на пробел
+                            temp_df_third_layer = temp_df_third_layer.applymap(lambda x: str.replace(x,'Не заполнено','') if isinstance(x,str) else x)
                             data = temp_df_third_layer.to_dict('records')  # конвертируем в список словарей
                             if mode_combine == 'No':
                                 if mode_group == 'No':
@@ -704,7 +710,7 @@ if __name__ == '__main__':
     mode_combine_main = 'No'
     mode_group_main = 'No'
     main_mode_structure_folder = 'Yes'
-    main_structure_folder = '10,22,25'
+    main_structure_folder = '10'
 
     generate_docs_from_template(name_file_template_doc_main,name_file_data_doc_main,name_column_main, name_type_file_main, path_to_end_folder_doc_main,
                                 name_value_column_main, mode_pdf_main,
