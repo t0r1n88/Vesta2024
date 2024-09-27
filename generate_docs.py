@@ -375,6 +375,8 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                 # Если нужно создавать одноуровневую структуру
                 # получаем название колонки
                 main_layer_name_column = df.columns[lst_number_column_folder_structure[0]]
+                # Заменяем пробелы на Не заполнено
+                df[main_layer_name_column] = df[main_layer_name_column].apply(lambda x:'Не заполнено' if x == ' ' else x)
                 lst_unique_value = df[main_layer_name_column].unique()  # получаем список уникальных значений
                 for name_folder in lst_unique_value:
                     temp_df = df[df[main_layer_name_column] == name_folder]  # фильтруем по названию
@@ -449,6 +451,10 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                 # Создаем папки для двухзначной структуры
                 name_first_layer_column = df.columns[lst_number_column_folder_structure[0]]
                 name_second_layer_column = df.columns[lst_number_column_folder_structure[1]]
+
+                # Заменяем пробелы на Не заполнено
+                df[name_first_layer_column] = df[name_first_layer_column].apply(lambda x:'Не заполнено' if x == ' ' else x)
+                df[name_second_layer_column] = df[name_second_layer_column].apply(lambda x:'Не заполнено' if x == ' ' else x)
 
                 lst_unique_value_first_layer = df[
                     name_first_layer_column].unique()  # получаем список уникальных значений
@@ -537,6 +543,11 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                 name_second_layer_column = df.columns[lst_number_column_folder_structure[1]]
                 name_third_layer_column = df.columns[lst_number_column_folder_structure[2]]
 
+                # Заменяем пробелы на Не заполнено
+                df[name_first_layer_column] = df[name_first_layer_column].apply(lambda x:'Не заполнено' if x == ' ' else x)
+                df[name_second_layer_column] = df[name_second_layer_column].apply(lambda x:'Не заполнено' if x == ' ' else x)
+                df[name_third_layer_column] = df[name_third_layer_column].apply(lambda x:'Не заполнено' if x == ' ' else x)
+
                 lst_unique_value_first_layer = df[
                     name_first_layer_column].unique()  # получаем список уникальных значений
                 for first_name_folder in lst_unique_value_first_layer:
@@ -624,17 +635,6 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                             print("Ошибка при попытке удаления файла: {}".format(e))
                                 else:
                                     raise CheckBoxException
-
-
-
-
-
-
-
-
-
-
-
 
     except NameError as e:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
