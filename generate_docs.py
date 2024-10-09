@@ -866,6 +866,77 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                     os.remove(f'{template_page_break_path}/page_break.docx')
                                 except OSError as e:
                                     print("Ошибка при попытке удаления файла: {}".format(e))
+                elif len(lst_number_column_folder_structure) == 3:
+                    # Если нужно создавать трехуровневую структуру Например Школа-Класс-буква класса
+                    # получаем названия колонок для трех уровней
+                    name_first_layer_column = df.columns[lst_number_column_folder_structure[0]]
+                    name_second_layer_column = df.columns[lst_number_column_folder_structure[1]]
+                    name_third_layer_column = df.columns[lst_number_column_folder_structure[2]]
+
+                    # Заменяем пробелы на Не заполнено
+                    df[name_first_layer_column] = df[name_first_layer_column].apply(lambda x:'Не заполнено' if x == ' ' else x)
+                    df[name_second_layer_column] = df[name_second_layer_column].apply(lambda x:'Не заполнено' if x == ' ' else x)
+                    df[name_third_layer_column] = df[name_third_layer_column].apply(lambda x:'Не заполнено' if x == ' ' else x)
+
+                    lst_unique_value_first_layer = df[
+                        name_first_layer_column].unique()  # получаем список уникальных значений
+                    for first_name_folder in lst_unique_value_first_layer:
+                        clean_first_name_folder = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_',
+                                                         first_name_folder)  # очищаем название от лишних символов
+
+                        # получаем отфильтрованный датафрейм по значениям колонки первого уровня
+                        temp_df_first_layer = df[df[name_first_layer_column] == first_name_folder]  # фильтруем по названию
+                        lst_unique_value_second_layer = temp_df_first_layer[
+                            name_second_layer_column].unique()  # получаем список уникальных значений второго уровня
+                        # фильтруем по значениям колонки второго уровня
+                        for second_name_folder in lst_unique_value_second_layer:
+                            temp_df_second_layer = temp_df_first_layer[
+                                temp_df_first_layer[name_second_layer_column] == second_name_folder]
+                            clean_second_name_folder = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_',
+                                                              second_name_folder)  # очищаем название от лишних символов
+                            lst_unique_value_third_layer = temp_df_second_layer[
+                                name_third_layer_column].unique()  # получаем список уникальных значений третьего уровня
+                            for third_name_folder in lst_unique_value_third_layer:
+                                clean_third_name_folder = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_',
+                                                                 third_name_folder)  # очищаем название от лишних символов
+                                temp_df_third_layer = temp_df_second_layer[
+                                    temp_df_second_layer[name_third_layer_column] == third_name_folder]
+
+
+
+                                finish_path = f'{path_to_end_folder_doc}/{clean_first_name_folder}/{clean_second_name_folder}/{clean_third_name_folder}'
+                                if not os.path.exists(finish_path):
+                                    os.makedirs(finish_path)
+                                # заменяем перед записью документа Не заполнено на пробел
+                                temp_df_third_layer = temp_df_third_layer.applymap(lambda x: str.replace(x,'Не заполнено','') if isinstance(x,str) else x)
+                                data = temp_df_third_layer.to_dict('records')  # конвертируем в список словарей
+                                if mode_combine == 'No':
+                                    # Создаем в цикле документы
+                                    for idx, row in enumerate(data):
+                                        doc = DocxTemplate(name_file_template_doc)
+                                        context = row
+                                        doc.render(context)
+                                        name_file = f'{name_type_file} {row[name_column]}'
+                                        name_file = re.sub(r'[<> :"?*|\\/]', ' ', name_file)
+                                        threshold_name = 200 - (len(finish_path) + 10)
+                                        if threshold_name <= 0:  # если путь к папке слишком длинный вызываем исключение
+                                            raise OSError
+                                        name_file = name_file[:threshold_name]  # ограничиваем название файла
+                                        # Сохраняем файл
+                                        short_version_save_result_file(finish_path, name_file, doc, idx)
+                                else:
+                                    # Открываем шаблон
+                                    doc_page_break = Document(name_file_template_doc)
+                                    # Добавляем разрыв страницы
+                                    doc_page_break.add_page_break()
+                                    template_page_break_path = os.path.dirname(name_file_template_doc)
+                                    doc_page_break.save(f'{template_page_break_path}/page_break.docx')
+                                    template_page_break_path_finish = f'{template_page_break_path}/page_break.docx'
+                                    short_combine_all_docx(data, template_page_break_path_finish, finish_path)
+                                    try:
+                                        os.remove(f'{template_page_break_path}/page_break.docx')
+                                    except OSError as e:
+                                        print("Ошибка при попытке удаления файла: {}".format(e))
 
 
 
@@ -942,7 +1013,7 @@ if __name__ == '__main__':
     mode_combine_main = 'Yes'
     mode_group_main = 'No'
     main_mode_structure_folder = 'Yes'
-    main_structure_folder = '10,11'
+    main_structure_folder = '10,11,13'
     main_mode_full = 'Yes'
 
     generate_docs_from_template(name_file_template_doc_main,name_file_data_doc_main,name_column_main, name_type_file_main, path_to_end_folder_doc_main,
