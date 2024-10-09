@@ -201,6 +201,8 @@ def generate_docs_other():
         name_value_column = entry_value_column.get() # значение для генерации одиночного файла
         number_structure_folder = entry_structure_folder_value.get() # получаем список номеров колонок для структуры папок
 
+        # получаем состояние чекбокса создания только pdf версий файлов
+        mode_full = mode_full_value.get()
         # получаем состояние чекбокса создания pdf
         mode_pdf = mode_pdf_value.get()
         # Получаем состояние  чекбокса объединения файлов в один
@@ -211,7 +213,7 @@ def generate_docs_other():
         mode_structure_folder = mode_structure_folder_value.get()
 
         generate_docs_from_template(name_file_template_doc,name_file_data_doc,name_column, name_type_file, path_to_end_folder_doc, name_value_column, mode_pdf,
-                                    mode_combine, mode_group,mode_structure_folder,number_structure_folder)
+                                    mode_combine, mode_group,mode_structure_folder,number_structure_folder,mode_full)
 
     except NameError as e:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
@@ -751,7 +753,7 @@ def open_libraries():
 
 if __name__ == '__main__':
     window = Tk()
-    window.title('Веста Обработка таблиц и создание документов ver 1.53')
+    window.title('Веста Обработка таблиц и создание документов ver 1.54')
     # Устанавливаем размер и положение окна
     set_window_size(window)
     # window.geometry('774x760')
@@ -1014,6 +1016,21 @@ if __name__ == '__main__':
     # поле ввода
     entry_value_number_column = Entry(frame_data_for_options, textvariable=entry_structure_folder_value, width=30)
     entry_value_number_column.pack(ipady=5)
+
+    # Переключатель краткой версии или полной версии
+    mode_full_value = StringVar()
+
+    # Устанавливаем значение по умолчанию для этой переменной. По умолчанию будет вестись подсчет числовых данных
+    mode_full_value.set('No')
+    # Создаем чекбокс для выбора режима подсчета
+
+    chbox_mode_full = Checkbutton(frame_data_for_options,
+                                       text='Поставьте галочку, если вам нужно чтобы создавались ТОЛЬКО pdf файлы. Работает только в Windows!',
+                                       variable=mode_full_value,
+                                       offvalue='No',
+                                       onvalue='Yes')
+    chbox_mode_full.pack()
+
 
 
 
