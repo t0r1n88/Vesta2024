@@ -824,7 +824,7 @@ if __name__ == '__main__':
     name_file_template_doc_main = 'data/Создание документов/Пример Шаблон согласия.docx'
     name_file_data_doc_main = 'data/Создание документов/Таблица для заполнения согласия.xlsx'
     path_to_end_folder_doc_main = 'data/result'
-    mode_combine_main = 'Yes'
+    mode_combine_main = 'No'
     mode_group_main = 'No'
     main_mode_structure_folder = 'No'
     main_structure_folder = '10'
