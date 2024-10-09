@@ -282,9 +282,6 @@ def short_version_save_result_file(finish_path:str,name_file:str,doc:DocxTemplat
                 keep_active=True)
         os.remove(f'{finish_path}/{name_file}.docx')
 
-
-
-
 def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_column, name_type_file,path_to_end_folder_doc, name_value_column, mode_pdf,
                                 mode_combine, mode_group,mode_structure_folder,number_structure_folder,mode_full):
     """
@@ -443,7 +440,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
             else:
                 # очищаем строку от лишних символов и превращаем в список номеров колонок
                 lst_number_column_folder_structure = prepare_entry_str(number_structure_folder, r'[^\d,]', '', ',')
-                # проверяем длину списка не более 2 и не равно 0
+                # проверяем длину списка не более 3 и не равно 0
                 if len(lst_number_column_folder_structure) == 0 or len(lst_number_column_folder_structure) > 3:
                     raise NoMoreNumberColumn
                 # проверяем чтобы номер колонки не превышал количество колонок в датафрейме
@@ -727,7 +724,6 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                     for idx, row in enumerate(data):
                         doc = DocxTemplate(name_file_template_doc)
                         context = row
-                        # print(context)
                         doc.render(context)
                         # Сохраняенм файл
                         # получаем название файла и убираем недопустимые символы < > : " /\ | ? *
@@ -753,6 +749,65 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                         os.remove(f'{template_page_break_path}/page_break.docx')
                     except OSError as e:
                         print("Ошибка при попытке удаления файла: {}".format(e))
+            else:
+                # очищаем строку от лишних символов и превращаем в список номеров колонок
+                lst_number_column_folder_structure = prepare_entry_str(number_structure_folder, r'[^\d,]', '', ',')
+                # проверяем длину списка не более 3 и не равно 0
+                if len(lst_number_column_folder_structure) == 0 or len(lst_number_column_folder_structure) > 3:
+                    raise NoMoreNumberColumn
+                # проверяем чтобы номер колонки не превышал количество колонок в датафрейме
+                for number_column in lst_number_column_folder_structure:
+                    if number_column > df.shape[1] - 1:
+                        raise NotNumberColumn
+
+                if len(lst_number_column_folder_structure) == 1:
+                    # Если нужно создавать одноуровневую структуру
+                    # получаем название колонки
+                    main_layer_name_column = df.columns[lst_number_column_folder_structure[0]]
+                    # Заменяем пробелы на Не заполнено
+                    df[main_layer_name_column] = df[main_layer_name_column].apply(
+                        lambda x: 'Не заполнено' if x == ' ' else x)
+                    lst_unique_value = df[main_layer_name_column].unique()  # получаем список уникальных значений
+                    for name_folder in lst_unique_value:
+                        temp_df = df[df[main_layer_name_column] == name_folder]  # фильтруем по названию
+                        # Создаем название для папки
+                        clean_name_folder = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_',
+                                                   name_folder)  # очищаем название от лишних символов
+                        finish_path = f'{path_to_end_folder_doc}/{clean_name_folder}'
+                        if not os.path.exists(finish_path):
+                            os.makedirs(finish_path)
+                        temp_df = temp_df.applymap(
+                            lambda x: str.replace(x, 'Не заполнено', '') if isinstance(x, str) else x)
+                        data = temp_df.to_dict('records')  # делаем из датафрейма список словарей
+
+                        if mode_combine == 'No':
+                                # Создаем в цикле документы
+                            for idx, row in enumerate(data):
+                                doc = DocxTemplate(name_file_template_doc)
+                                context = row
+                                doc.render(context)
+                                name_file = f'{name_type_file} {row[name_column]}'
+                                name_file = re.sub(r'[<> :"?*|\\/]', ' ', name_file)
+                                threshold_name = 200 - (len(finish_path) + 10)
+                                if threshold_name <= 0:  # если путь к папке слишком длинный вызываем исключение
+                                    raise OSError
+                                name_file = name_file[:threshold_name]  # ограничиваем название файла
+                                # Сохраняем файл
+                                short_version_save_result_file(finish_path, name_file, doc, idx)
+                        else:
+                            # Открываем шаблон
+                            doc_page_break = Document(name_file_template_doc)
+                            # Добавляем разрыв страницы
+                            doc_page_break.add_page_break()
+                            template_page_break_path = os.path.dirname(name_file_template_doc)
+                            doc_page_break.save(f'{template_page_break_path}/page_break.docx')
+                            template_page_break_path_finish = f'{template_page_break_path}/page_break.docx'
+                            short_combine_all_docx(data, template_page_break_path_finish, finish_path)
+                            try:
+                                os.remove(f'{template_page_break_path}/page_break.docx')
+                            except OSError as e:
+                                print("Ошибка при попытке удаления файла: {}".format(e))
+
 
 
 
@@ -824,10 +879,10 @@ if __name__ == '__main__':
     name_file_template_doc_main = 'data/Создание документов/Пример Шаблон согласия.docx'
     name_file_data_doc_main = 'data/Создание документов/Таблица для заполнения согласия.xlsx'
     path_to_end_folder_doc_main = 'data/result'
-    mode_combine_main = 'No'
+    mode_combine_main = 'Yes'
     mode_group_main = 'No'
-    main_mode_structure_folder = 'No'
-    main_structure_folder = '10'
+    main_mode_structure_folder = 'Yes'
+    main_structure_folder = '11'
     main_mode_full = 'Yes'
 
     generate_docs_from_template(name_file_template_doc_main,name_file_data_doc_main,name_column_main, name_type_file_main, path_to_end_folder_doc_main,
