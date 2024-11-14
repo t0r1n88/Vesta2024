@@ -90,8 +90,18 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                             # Получаем название файла без расширения
                             name_file = filename.split('.xlsx')[0]
                             print(name_file)
-                            temb_wb = load_workbook(
-                                filename=f'{dirpath}/{filename}')  # загружаем файл, для проверки листов
+                            try:
+                                temb_wb = load_workbook(
+                                    filename=f'{dirpath}/{filename}')  # загружаем файл, для проверки листов
+                            except:
+                                temp_error_df = pd.DataFrame(
+                                    columns=['Название файла', 'Наименование листа', 'Тип ошибки', 'Описание ошибки'],
+                                    data=[[name_file, 'Не удалось обработать файл', 'При открытии файла возникла ошибка',
+                                           f'Проверьте указанный файл на целостность и соответствие содержимого эталонному файлу']])  # создаем временный датафрейм. потом надо подумать над словарем
+
+                                err_df = pd.concat([err_df, temp_error_df],
+                                                   ignore_index=True)  # добавляем в датафрейм ошибок
+                                continue
                             """
                             Проверяем наличие листов из эталонного файла в проверяемом файле, если они есть то начинаем 
                             дальнейшую проверку
@@ -191,7 +201,18 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                             # Получаем название файла без расширения
                             name_file = filename.split('.xlsx')[0]
                             print(name_file)
-                            temb_wb = load_workbook(filename=f'{dirpath}/{filename}')  # загружаем файл
+                            try:
+                                temb_wb = load_workbook(
+                                    filename=f'{dirpath}/{filename}')  # загружаем файл, для проверки листов
+                            except:
+                                temp_error_df = pd.DataFrame(
+                                    columns=['Название файла', 'Наименование листа', 'Тип ошибки', 'Описание ошибки'],
+                                    data=[[name_file, 'Не удалось обработать файл', 'При открытии файла возникла ошибка',
+                                           f'Проверьте указанный файл на целостность и соответствие содержимого эталонному файлу']])  # создаем временный датафрейм. потом надо подумать над словарем
+
+                                err_df = pd.concat([err_df, temp_error_df],
+                                                   ignore_index=True)  # добавляем в датафрейм ошибок
+                                continue
 
                             if standard_size_sheets == len(
                                     temb_wb.sheetnames):  # если количество листов одинаково то обрабатываем
@@ -296,7 +317,18 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                             # Получаем название файла без расширения
                             name_file = filename.split('.xlsx')[0]
                             print(name_file)
-                            temb_wb = load_workbook(filename=f'{dirpath}/{filename}')  # загружаем файл
+                            try:
+                                temb_wb = load_workbook(
+                                    filename=f'{dirpath}/{filename}')  # загружаем файл, для проверки листов
+                            except:
+                                temp_error_df = pd.DataFrame(
+                                    columns=['Название файла', 'Наименование листа', 'Тип ошибки', 'Описание ошибки'],
+                                    data=[[name_file, 'Не удалось обработать файл', 'При открытии файла возникла ошибка',
+                                           f'Проверьте указанный файл на целостность и соответствие содержимого эталонному файлу']])  # создаем временный датафрейм. потом надо подумать над словарем
+
+                                err_df = pd.concat([err_df, temp_error_df],
+                                                   ignore_index=True)  # добавляем в датафрейм ошибок
+                                continue
                             if set_params_sheets.issubset(set(temb_wb.sheetnames)):
                                 count_errors = 0
                                 # проверяем наличие листов указанных в файле параметров
@@ -366,21 +398,18 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                                  f'Если вы выбрали файл с параметрами, а ошибка повторяется,то перенесите папку \n'
                                  f'с файлами которые вы хотите обработать в корень диска. Проблема может быть в \n '
                                  f'в слишком длинном пути к обрабатываемым файлам или конечной папке')
-
-        except:
-            logging.exception('AN ERROR HAS OCCURRED')
-            messagebox.showerror('Веста Обработка таблиц и создание документов',
-                                 'Возникла ошибка!!! Подробности ошибки в файле error.log')
         else:
             messagebox.showinfo('Веста Обработка таблиц и создание документов',
                                 'Создание общей таблицы успешно завершено!!!')
 
 if __name__=='__main__':
-    checkbox_harvest_main = 0
-    merger_entry_skip_rows_main = 1
+    checkbox_harvest_main = 1
+    merger_entry_skip_rows_main = 5
     file_standard_merger_main = 'data/Слияние данных/Списки/Список 28.03.02 Наноинженерия.xlsx'
-    dir_name_main = 'data/Слияние данных/Списки'
-    path_to_end_folder_merger_main = 'data/result/Слияние данных'
+    file_standard_merger_main = 'data/Слияние данных/Эталон.xlsx'
+
+    dir_name_main = 'data/Слияние данных/Школы'
+    path_to_end_folder_merger_main = 'data/result'
     file_params_main = ''
 
 
