@@ -95,11 +95,15 @@ def generate_svod_for_columns(file_data:str,sheet_name:str,end_folder:str,str_co
     """
 
     try:
-        temp_wb = openpyxl.load_workbook(file_data,read_only=True)
-        if sheet_name not in temp_wb.sheetnames:
-            raise NotSheet
-        temp_wb.close()
-        base_df = pd.read_excel(file_data, sheet_name=sheet_name)
+        try:
+            temp_wb = openpyxl.load_workbook(file_data,read_only=True)
+            if sheet_name not in temp_wb.sheetnames:
+                raise NotSheet
+            temp_wb.close()
+            base_df = pd.read_excel(file_data, sheet_name=sheet_name)
+        except:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Не удалось обработать файл. Возможно файл поврежден')
         base_df.fillna('Не заполнено',inplace=True)
 
         # обрабатываем список колонок по которым нужно группировать
@@ -237,6 +241,8 @@ def generate_svod_for_columns(file_data:str,sheet_name:str,end_folder:str,str_co
         current_time = time.strftime('%H_%M_%S', t)
 
         wb.save(f'{end_folder}/Сводные данные {current_time}.xlsx')
+    except UnboundLocalError:
+        pass
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите файлы с данными и папку куда будет генерироваться файл')
@@ -264,10 +270,10 @@ def generate_svod_for_columns(file_data:str,sheet_name:str,end_folder:str,str_co
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Перенесите файлы, конечную папку с которой вы работете в корень диска. Проблема может быть\n '
                              f'в слишком длинном пути к обрабатываемым файлам или конечной папке.')
-    # except:
-    #     logging.exception('AN ERROR HAS OCCURRED')
-    #     messagebox.showerror('Веста Обработка таблиц и создание документов',
-    #                          'Возникла ошибка!!! Подробности ошибки в файле error.log')
+    except:
+        logging.exception('AN ERROR HAS OCCURRED')
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             'Возникла ошибка!!! Подробности ошибки в файле error.log. Возможно обрабатываемый файл поврежден.')
     else:
         messagebox.showinfo('Веста Обработка таблиц и создание документов', 'Данные успешно обработаны')
 

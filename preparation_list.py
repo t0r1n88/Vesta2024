@@ -383,7 +383,11 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
     checkbox_mix_alphabets: Проверять на смешение русских и английских букв или нет. Yes or No
     """
     try:
-        df = pd.read_excel(file_data,dtype=str) # считываем датафрейм
+        try:
+            df = pd.read_excel(file_data,dtype=str) # считываем датафрейм
+        except:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Не удалось обработать файл. Возможно файл поврежден')
         df.columns = list(map(str,list(df.columns))) # делаем названия колонок строкововыми
         # очищаем все строковые значения от пробелов в начале и конце
         df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
@@ -518,6 +522,9 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
         name_file = file_data.split('.xlsx')[0]  # получаем путь без расширения
         name_file = name_file.split('/')[-1]
         wb_main.save(f'{path_end_folder}/Обработанный {name_file} {current_time}.xlsx')
+
+    except UnboundLocalError:
+        pass
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите файлы с данными и папку куда будет генерироваться файл')

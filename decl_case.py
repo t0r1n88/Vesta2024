@@ -175,7 +175,11 @@ def declension_fio_by_case(fio_column,data_decl_case,path_to_end_folder_decl_cas
     """
 
     try:
-        df = pd.read_excel(data_decl_case, dtype={fio_column: str})
+        try:
+            df = pd.read_excel(data_decl_case, dtype={fio_column: str})
+        except:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Не удалось обработать файл. Возможно файл поврежден')
 
         temp_df = pd.DataFrame()  # временный датафрейм для хранения колонок просклоненных по падежам
 
@@ -302,6 +306,8 @@ def declension_fio_by_case(fio_column,data_decl_case,path_to_end_folder_decl_cas
         wb = write_df_to_excel(dct_df,write_index)
 
         wb.save(f'{path_to_end_folder_decl_case}/ФИО по падежам от {current_time}.xlsx')
+    except UnboundLocalError:
+        pass
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите файлы с данными и папку куда будет генерироваться файл')
@@ -318,10 +324,11 @@ def declension_fio_by_case(fio_column,data_decl_case,path_to_end_folder_decl_cas
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Перенесите файлы, конечную папку с которой вы работете в корень диска. Проблема может быть\n '
                              f'в слишком длинном пути к обрабатываемым файлам или конечной папке.')
+
     except:
         logging.exception('AN ERROR HAS OCCURRED')
         messagebox.showerror('Веста Обработка таблиц и создание документов',
-                             'Возникла ошибка!!! Подробности ошибки в файле error.log')
+                             'Возникла ошибка!!! Подробности ошибки в файле error.log Возможно обрабатываемый файл поврежден.')
     else:
         messagebox.showinfo('Веста Обработка таблиц и создание документов', 'Данные успешно обработаны')
 

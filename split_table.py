@@ -71,7 +71,11 @@ def split_table(file_data_split:str,number_column:int,checkbox_split:int,path_to
     try:
         if number_column == 0: # если кто нажал
             raise ZeroNumberColumn
-        df = pd.read_excel(file_data_split,dtype=str)
+        try:
+            df = pd.read_excel(file_data_split,dtype=str)
+        except:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Не удалось обработать файл. Возможно файл поврежден')
         name_column = df.columns[number_column - 1]  # получаем название колонки
         df[name_column] = df[name_column].apply(clean_value)
 
@@ -142,7 +146,10 @@ def split_table(file_data_split:str,number_column:int,checkbox_split:int,path_to
                 wb.save(f'{path_to_end_folder}/{short_name}.xlsx')
                 used_name_file.add(short_name.lower())
                 wb.close()
-    except NameError as e:
+
+    except UnboundLocalError:
+        pass
+    except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите шаблон,файл с данными и папку куда будут генерироваться файлы')
         logging.exception('AN ERROR HAS OCCURRED')

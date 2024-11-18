@@ -310,7 +310,11 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
 
         # Считываем данные
         # Добавил параметр dtype =str чтобы данные не преобразовались а использовались так как в таблице
-        df = pd.read_excel(name_file_data_doc, dtype=str)
+        try:
+            df = pd.read_excel(name_file_data_doc, dtype=str)
+        except:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Не удалось обработать файл xlsx с данными на основе которых будут создаваться документы. Возможно файл поврежден')
         df[name_column] = df[name_column].apply(clean_value) # преобразовываем колонку меняя пустые значения и пустые пробелы на Не заполнено
         used_name_file = set()  # множество для уже использованных имен файлов
         # Заполняем Nan
@@ -939,9 +943,8 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                         print("Ошибка при попытке удаления файла: {}".format(e))
 
 
-
-
-
+    except UnboundLocalError:
+        pass
     except NameError as e:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите шаблон,файл с данными и папку куда будут генерироваться файлы')

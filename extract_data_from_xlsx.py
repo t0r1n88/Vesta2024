@@ -110,12 +110,21 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
             columns=['Название файла','Описание ошибки'])  # датафрейм для ошибок
 
         # Получаем название обрабатываемого листа
-        name_list_df = pd.read_excel(name_file_params_calculate_data, nrows=1,usecols='A:B')
-        name_list_df.columns = ['Показатель','Значение']
-        name_list = name_list_df['Значение'].loc[0]
+        try:
+            name_list_df = pd.read_excel(name_file_params_calculate_data, nrows=1,usecols='A:B')
+            name_list_df.columns = ['Показатель','Значение']
+            name_list = name_list_df['Значение'].loc[0]
 
-        # Получаем шаблон с данными, первую строку пропускаем, поскольку название обрабатываемого листа мы уже получили
-        df = pd.read_excel(name_file_params_calculate_data, skiprows=1)
+            # Получаем шаблон с данными, первую строку пропускаем, поскольку название обрабатываемого листа мы уже получили
+
+            df = pd.read_excel(name_file_params_calculate_data, skiprows=1)
+        except NameError:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Выберите файл с параметрами обработки')
+        except:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Не удалось обработать файл. Возможно файл поврежден')
+
 
         # Создаем словарь параметров
         param_dict = dict()
@@ -143,7 +152,19 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
                 # Создаем словарь для создания строки которую мы будем добавлять в проверочный датафрейм
                 new_row = dict()
                 new_row['Название файла'] = name_file # создаем ключ по названию файла
-                wb = openpyxl.load_workbook(f'{files_calculate_data}/{file}') # открываем файл
+                try:
+                    wb = openpyxl.load_workbook(f'{files_calculate_data}/{file}') # открываем файл
+                except:
+                    temp_error_df = pd.DataFrame(
+                        data=[[f'{file}',
+                               f'Не удалось обработать файл. Возможно файл поврежден'
+                               ]],
+                        columns=['Название файла',
+                                 'Описание ошибки'])
+                    error_df = pd.concat([error_df, temp_error_df], axis=0,
+                                         ignore_index=True)
+                    count_errors += 1
+                    continue
                 # Проверяем наличие листа
                 if name_list in wb.sheetnames:
                     sheet = wb[name_list]
@@ -233,6 +254,8 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
             messagebox.showwarning('Веста Обработка таблиц и создание документов',
                                 f'Обработано {count} из {quantity_files} файлов.\n Причины необработки файлов указаны в файле {path_to_end_folder_calculate_data}/Ошибки {current_time}.xlsx')
 
+    except UnboundLocalError:
+        pass
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите шаблон,файл с данными и папку куда будут генерироваться файлы')

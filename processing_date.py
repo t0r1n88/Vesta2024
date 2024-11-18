@@ -121,9 +121,12 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
         name_os = platform.system()
 
         # Считываем файл
-        df = pd.read_excel(name_file_data_date)
+        try:
+            df = pd.read_excel(name_file_data_date)
+        except:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Не удалось обработать файл. Возможно файл поврежден')
         # создаем временную колонку которой в конце заменим исходную колонку
-        # df['temp'] = pd.to_datetime(df[name_column], dayfirst=True, errors='ignore')
         df['temp'] = df[name_column].apply(lambda x:pd.to_datetime(x,dayfirst=True,errors='ignore'))
         df['temp'] = df['temp'].fillna('Пустая ячейка')
         df['temp'] = df['temp'].apply(lambda x: x.strftime('%d.%m.%Y') if isinstance(x, (pd.Timestamp, datetime.datetime)) and pd.notna(x) else f'Некорректное значение - {str(x)}')
@@ -328,6 +331,9 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
         name_column = re.sub(r'[\r\b\n\t<> :"?*|\\/]', '_', name_column)
 
         wb.save(f'{path_to_end_folder_date}/Результат обработки колонки {name_column} от {current_time}.xlsx')
+
+    except UnboundLocalError:
+        pass
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите файл с данными и папку куда будет генерироваться файл')

@@ -141,17 +141,33 @@ def merging_two_tables(file_params, first_sheet_name, second_sheet_name, first_f
         t = time.localtime()
         current_time = time.strftime('%H_%M_%S', t)
         # загружаем файлы
-        first_df = pd.read_excel(first_file, sheet_name=first_sheet_name, dtype=str,
-                                 keep_default_na=False)
-        # получаем имя файла
-        name_first_df = first_file.split('/')[-1]
-        name_first_df = name_first_df.split('.xlsx')[0]
+        try:
+            first_df = pd.read_excel(first_file, sheet_name=first_sheet_name, dtype=str,
+                                     keep_default_na=False)
+            # получаем имя файла
+            name_first_df = first_file.split('/')[-1]
+            name_first_df = name_first_df.split('.xlsx')[0]
+        except ValueError:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'В первом файле нет листа с таким названием!\nПроверьте написание названия листа')
+        except:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Не удалось обработать файл. Возможно файл поврежден')
 
-        second_df = pd.read_excel(second_file, sheet_name=second_sheet_name, dtype=str,
+
+
+        try:
+            second_df = pd.read_excel(second_file, sheet_name=second_sheet_name, dtype=str,
                                   keep_default_na=False)
-        # получаем имя файла
-        name_second_df = second_file.split('/')[-1]
-        name_second_df = name_second_df.split('.xlsx')[0]
+            # получаем имя файла
+            name_second_df = second_file.split('/')[-1]
+            name_second_df = name_second_df.split('.xlsx')[0]
+        except ValueError:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Во втором файле нет листа с таким названием!\nПроверьте написание названия листа')
+        except:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Не удалось обработать файл. Возможно файл поврежден')
 
         # делаем названия колонок строковыми
         first_df.columns = list(map(str,list(first_df.columns)))
@@ -161,7 +177,11 @@ def merging_two_tables(file_params, first_sheet_name, second_sheet_name, first_f
         precise_first_df = first_df.copy()
         precise_second_df = second_df.copy()
 
-        params = pd.read_excel(file_params, header=None, keep_default_na=False)
+        try:
+            params = pd.read_excel(file_params, header=None, keep_default_na=False)
+        except:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 f'Не удалось обработать файл c параметрами соединения. Возможно файл поврежден')
 
 
         # Преврашаем каждую колонку в список
@@ -548,6 +568,8 @@ def merging_two_tables(file_params, first_sheet_name, second_sheet_name, first_f
             index=False)
 
 
+    except UnboundLocalError:
+        pass
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите файлы с данными и папку куда будет генерироваться файл')
@@ -555,10 +577,6 @@ def merging_two_tables(file_params, first_sheet_name, second_sheet_name, first_f
     except KeyError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'В таблице нет такой колонки!\nПроверьте написание названия колонки')
-        logging.exception('AN ERROR HAS OCCURRED')
-    except ValueError:
-        messagebox.showerror('Веста Обработка таблиц и создание документов',
-                             f'В таблице нет листа с таким названием!\nПроверьте написание названия листа')
         logging.exception('AN ERROR HAS OCCURRED')
 
     except FileNotFoundError:
@@ -568,7 +586,7 @@ def merging_two_tables(file_params, first_sheet_name, second_sheet_name, first_f
     except:
         logging.exception('AN ERROR HAS OCCURRED')
         messagebox.showerror('Веста Обработка таблиц и создание документов',
-                             'Возникла ошибка!!! Подробности ошибки в файле error.log')
+                             'Возникла ошибка!!! Подробности ошибки в файле error.log. Возможно обрабатываемые файлы повреждены.')
     else:
         messagebox.showinfo('Веста Обработка таблиц и создание документов', 'Данные успешно обработаны')
 

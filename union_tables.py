@@ -60,7 +60,11 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
 
             name_file_standard_merger = file_standard_merger.split('/')[-1]  # получаем имя файла
 
-            standard_wb = load_workbook(filename=file_standard_merger)  # Загружаем эталонный файл
+            try:
+                standard_wb = load_workbook(filename=file_standard_merger)  # Загружаем эталонный файл
+            except:
+                messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                     f'Не удалось обработать эталонный файл. Возможно файл поврежден')
 
             standard_sheets = sorted(
                 standard_wb.sheetnames)  # отсортрованный список листов по которому будет вестись сравнение
@@ -383,6 +387,9 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                 err_out_wb['Sheet'].column_dimensions['D'].width = 100
                 err_out_wb.save(f'{path_to_end_folder_merger}/Слияние по варианту В Ошибки от {current_time}.xlsx')
 
+
+        except UnboundLocalError:
+            pass
         except NameError:
             messagebox.showerror('Веста Обработка таблиц и создание документов',
                                  f'Выберите папку с файлами,эталонный файл и папку куда будут генерироваться файлы')
