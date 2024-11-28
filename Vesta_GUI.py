@@ -753,7 +753,7 @@ def open_libraries():
 
 if __name__ == '__main__':
     window = Tk()
-    window.title('Веста Обработка таблиц и создание документов ver 1.55')
+    window.title('Веста Обработка таблиц и создание документов ver 1.56')
     # Устанавливаем размер и положение окна
     set_window_size(window)
     # window.geometry('774x760')
@@ -1682,7 +1682,7 @@ if __name__ == '__main__':
 
     lbl_about = Label(about_frame_description,
                       text="""Веста - Программа для обработки таблиц и создания однотипных документов
-                           Версия 1.55
+                           Версия 1.56
                            Язык программирования - Python 3\n
                            Используемая лицензия BSD-2-Clause\n
                            Copyright (c) <2024> <Будаев Олег Тимурович>

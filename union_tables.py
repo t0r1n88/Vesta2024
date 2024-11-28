@@ -79,6 +79,10 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
 
                 temp_sheet_max_row = standard_wb[sheet].max_row  # получаем последнюю строку
                 standard_wb[sheet].delete_rows(del_cols_df.shape[0] + 2, temp_sheet_max_row)  # удаляем все лишнее
+                # добавляем колонку для сохранения названия файла откуда взяты данные
+                standard_wb[sheet].insert_cols(1)
+                standard_wb[sheet]['A1'] = 'Файл откуда взяты данные'
+
 
             dct_df = dict()  # создаем словарь в котором будем хранить да
 
@@ -139,7 +143,7 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                                     temp_df.dropna(axis=0,how='all',inplace=True)
 
                                     temp_df['Номер строки'] = range(1, temp_df.shape[0] + 1)
-                                    temp_df['Откуда взяты данные'] = name_file
+                                    temp_df.insert(0,'Откуда взяты данные',name_file)
                                     for row in dataframe_to_rows(temp_df, index=False, header=False):
                                         standard_wb[name_sheet].append(row)  # добавляем данные
 
@@ -170,7 +174,7 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                                                    ignore_index=True)  # добавляем в датафрейм ошибок
 
                 # Получаем текущую дату
-                current_time = time.strftime('%H_%M_%S %d.%m.%Y')
+                current_time = time.strftime('%H_%M_%S')
                 # сохраняем по ширине колонок
                 first_sheet = standard_wb.sheetnames[0]
                 for column in standard_wb[first_sheet].columns:
@@ -254,7 +258,7 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                                     # удаляем пустые строки
                                     temp_df.dropna(axis=0,how='all',inplace=True)
                                     temp_df['Номер строки'] = range(1, temp_df.shape[0] + 1)
-                                    temp_df['Откуда взяты данные'] = name_file
+                                    temp_df.insert(0,'Откуда взяты данные',name_file)
                                     for row in dataframe_to_rows(temp_df, index=False, header=False):
                                         standard_wb[name_sheet].append(row)  # добавляем данные
                             else:
@@ -267,7 +271,7 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                                                    ignore_index=True)  # добавляем в датафрейм ошибок
 
                 # Получаем текущую дату
-                current_time = time.strftime('%H_%M_%S %d.%m.%Y')
+                current_time = time.strftime('%H_%M_%S')
                 # сохраняем по ширине колонок
                 first_sheet = standard_wb.sheetnames[0]
                 for column in standard_wb[first_sheet].columns:
@@ -360,7 +364,7 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                                     # удаляем пустые строки
                                     temp_df.dropna(axis=0,how='all',inplace=True)
                                     temp_df['Номер строки'] = range(1, temp_df.shape[0] + 1)
-                                    temp_df['Откуда взяты данные'] = name_file
+                                    temp_df.insert(0,'Откуда взяты данные',name_file)
                                     for row in dataframe_to_rows(temp_df, index=False, header=False):
                                         standard_wb[name_sheet].append(row)  # добавляем данные
                             else:
@@ -373,7 +377,7 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                                                    ignore_index=True)  # добавляем в датафрейм ошибок
 
                 # # Получаем текущую дату
-                current_time = time.strftime('%H_%M_%S %d.%m.%Y')
+                current_time = time.strftime('%H_%M_%S')
 
                 standard_wb.save(
                     f'{path_to_end_folder_merger}/Слияние по варианту В Общая таблица от {current_time}.xlsx')  # сохраняем
