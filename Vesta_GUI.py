@@ -14,6 +14,9 @@ from generate_docs import generate_docs_from_template  # Функция для �
 from split_table import split_table  # Функция для разделения таблицы по отдельным листам и файлам
 from preparation_list import prepare_list  # Функция для очистки и обработки списка
 from create_svod import generate_svod_for_columns  # Функция для создания сводных таблиц по заданным колонкам
+from counting_report import counting_table_report # Функция для подсчета табличных отчетов
+
+
 import pandas as pd
 import os
 from tkinter import *
@@ -39,6 +42,14 @@ logging.basicConfig(
     format="%(asctime)s - %(module)s - %(levelname)s - %(funcName)s: %(lineno)d - %(message)s",
     datefmt='%H:%M:%S',
 )
+
+class SameFolder(Exception):
+    """
+    Исключение для обработки случая когда выбраны одинаковые папки
+    """
+    pass
+
+
 
 
 def resource_path(relative_path):
@@ -611,6 +622,65 @@ def processing_svod():
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите файлы с данными и папку куда будет генерироваться файл')
         logging.exception('AN ERROR HAS OCCURRED')
+
+
+"""
+Функции для подсчета данных
+"""
+def select_file_params_counting_report():
+    """
+    Функция для выбора файла с параметрами подсчитываемых отчетов
+    :return: Путь к файлу с данными
+    """
+    global name_file_params_counting_report
+    # Получаем путь к файлу
+    name_file_params_counting_report = filedialog.askopenfilename(
+        filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+
+
+def select_folder_data_counting_report():
+    """
+    Функция для выбора папки с данными
+    :return:
+    """
+    global path_folder_counting_report
+    path_folder_counting_report = filedialog.askdirectory()
+
+
+def select_end_folder_data_counting_report():
+    """
+    Функция для выбора папки с данными
+    :return:
+    """
+    global path_end_folder_counting_report
+    path_end_folder_counting_report = filedialog.askdirectory()
+
+
+
+def processing_counting_report():
+    """
+    Функция для подсчета
+    :return:
+    """
+    try:
+        if path_folder_counting_report == path_end_folder_counting_report:
+            raise SameFolder
+        # подсчитываем
+        counting_table_report(name_file_params_counting_report,path_folder_counting_report,path_end_folder_counting_report)
+    except NameError:
+        messagebox.showerror('Эльпида Школьная отчетность',
+                             f'Выберите файл с параметрами , папку с отчетами и папку куда будет генерироваться результат')
+    except SameFolder:
+        messagebox.showerror('Эльпида Школьная отчетность',
+                             'Выберите разные папки в качестве исходной и конечной')
+
+
+
+
+
+
+
+
 
 
 """
@@ -1359,6 +1429,60 @@ if __name__ == '__main__':
                            command=calculate_data
                            )
     btn_calculate.pack(padx=10, pady=10)
+
+
+    """
+    Создание вкладки для подсчета табличных значений
+    """
+    tab_create_counting_report = ttk.Frame(tab_control)
+    tab_control.add(tab_create_counting_report, text='Обработка\nотчетов')
+
+    create_counting_report_frame_description = LabelFrame(tab_create_counting_report)
+    create_counting_report_frame_description.pack()
+
+    lbl_hello_create_counting_report = Label(create_counting_report_frame_description,
+                                             text='Центр опережающей профессиональной подготовки Республики Бурятия\n'
+                                                  'Подсчет данных в табличных отчетах путем сложения значений ячеек'
+                                             , width=60)
+    lbl_hello_create_counting_report.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
+
+    # Картинка
+    path_to_img_create_counting_report = resource_path('logo.png')
+    img_create_counting_report = PhotoImage(file=path_to_img_create_counting_report)
+    Label(create_counting_report_frame_description,
+          image=img_create_counting_report, padx=10, pady=10
+          ).pack(side=LEFT, anchor=E, ipadx=5, ipady=5)
+
+    # Создаем область для того чтобы поместить туда подготовительные кнопки(выбрать файл,выбрать папку и т.п.)
+    frame_data_counting_report = LabelFrame(tab_create_counting_report, text='Подготовка')
+    frame_data_counting_report.pack(padx=10, pady=10)
+
+    # Создаем кнопку выбора файла с параметрами
+    btn_choose_file_params_counting_report = Button(frame_data_counting_report, text='1) Выберите файл c параметрами',
+                                                    font=('Arial Bold', 14),
+                                                    command=select_file_params_counting_report)
+    btn_choose_file_params_counting_report.pack(padx=10, pady=10)
+
+    btn_choose_folder_data_counting_report = Button(frame_data_counting_report,
+                                                    text='2) Выберите папку с отчетами',
+                                                    font=('Arial Bold', 14),
+                                                    command=select_folder_data_counting_report)
+    btn_choose_folder_data_counting_report.pack(padx=10, pady=10)
+
+    btn_choose_end_folder_data_counting_report = Button(frame_data_counting_report,
+                                                    text='3) Выберите конечную папку',
+                                                    font=('Arial Bold', 14),
+                                                    command=select_end_folder_data_counting_report)
+    btn_choose_end_folder_data_counting_report.pack(padx=10, pady=10)
+
+    btn_processing_counting_report = Button(frame_data_counting_report,
+                                                    text='4) Обработать отчеты',
+                                                    font=('Arial Bold', 14),
+                                                    command=processing_counting_report)
+    btn_processing_counting_report.pack(padx=10, pady=10)
+
+
+
 
     """
     Создание вкладки для объединения таблиц в одну большую
