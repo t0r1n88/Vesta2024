@@ -231,7 +231,7 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
 
         # заполняем сводные таблицы
         # Количество совершенолетних
-        df_svod_by_matur = df.groupby(['Совершеннолетие']).agg({'ФИО': 'count'})
+        df_svod_by_matur = df.groupby(['Совершеннолетие']).agg({name_column: 'count'})
         df_svod_by_matur.columns = ['Количество']
         df_svod_by_matur.sort_values(by='Количество',inplace=True,ascending=False)
         for r in dataframe_to_rows(df_svod_by_matur, index=True, header=True):
