@@ -169,7 +169,7 @@ def check_snils(snils):
         out_snils = f'{first_group}-{second_group}-{third_group} {four_group}'
         return out_snils
     else:
-        return f'Неправильное значение!В СНИЛС должно быть 11 цифр - {snils} -{len(snils)} цифр'
+        return f'Неправильное значение!В СНИЛС должно быть 11 цифр - {snils} -{len(result)} цифр'
 
 def prepare_inn_column(df:pd.DataFrame,lst_columns:list)->pd.DataFrame:
     """
