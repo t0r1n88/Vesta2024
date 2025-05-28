@@ -121,7 +121,7 @@ def counting_table_report(file_params:str, report_dir:str,path_end_folder:str):
                     if file.startswith('~$'):
                         continue
                     try:
-                        wb = openpyxl.load_workbook(f'{dirpath}/{file}') # открываем файл
+                        wb = openpyxl.load_workbook(f'{dirpath}/{file}',data_only=True) # открываем файл
                     except:
                         temp_error_df = pd.DataFrame(
                             data=[[f'{file}',

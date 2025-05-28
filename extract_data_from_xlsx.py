@@ -153,7 +153,7 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
                 new_row = dict()
                 new_row['Название файла'] = name_file # создаем ключ по названию файла
                 try:
-                    wb = openpyxl.load_workbook(f'{files_calculate_data}/{file}') # открываем файл
+                    wb = openpyxl.load_workbook(f'{files_calculate_data}/{file}',data_only=True) # открываем файл
                 except:
                     temp_error_df = pd.DataFrame(
                         data=[[f'{file}',
