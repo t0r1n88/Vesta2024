@@ -407,7 +407,7 @@ def counting_table_report(file_params:str, report_dir:str,path_end_folder:str):
                             check_lst.insert(0,'Номер строки')
                             check_lst.insert(1,'Название файла')
                             check_df = pd.DataFrame(check_data,columns=check_lst)
-                            check_df[int_cols] = check_df[int_cols].applymap(convert_to_float)
+                            # check_df[int_cols] = check_df[int_cols].applymap(convert_to_float)
                             # Добавляем в проверочный датафрейм
                             value['Список для проверки'] = pd.concat([value['Список для проверки'],check_df])
 
