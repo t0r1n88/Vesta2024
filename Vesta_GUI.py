@@ -15,6 +15,7 @@ from split_table import split_table  # Функция для разделени�
 from preparation_list import prepare_list  # Функция для очистки и обработки списка
 from create_svod import generate_svod_for_columns  # Функция для создания сводных таблиц по заданным колонкам
 from counting_report import counting_table_report # Функция для подсчета табличных отчетов
+from union_files_xlsx import union_files_xlsx # Функция для слиния файлов с разным форматированием в один по разным листам
 
 
 import pandas as pd
@@ -668,12 +669,51 @@ def processing_counting_report():
         # подсчитываем
         counting_table_report(name_file_params_counting_report,path_folder_counting_report,path_end_folder_counting_report)
     except NameError:
-        messagebox.showerror('Эльпида Школьная отчетность',
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите файл с параметрами , папку с отчетами и папку куда будет генерироваться результат')
     except SameFolder:
-        messagebox.showerror('Эльпида Школьная отчетность',
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
                              'Выберите разные папки в качестве исходной и конечной')
 
+
+
+"""
+Функции для свода файлов в один
+"""
+def select_folder_data_union_file_xlsx():
+    """
+    Функция для выбора папки с данными
+    :return:
+    """
+    global path_folder_union_file_xlsx
+    path_folder_union_file_xlsx = filedialog.askdirectory()
+
+
+def select_end_folder_data_union_file_xlsx():
+    """
+    Функция для выбора папки с данными
+    :return:
+    """
+    global path_end_folder_union_file_xlsx
+    path_end_folder_union_file_xlsx = filedialog.askdirectory()
+
+
+def processing_union_file_xlsx():
+    """
+    Функция для подсчета
+    :return:
+    """
+    try:
+        if path_folder_union_file_xlsx == path_end_folder_union_file_xlsx:
+            raise SameFolder
+        # подсчитываем
+        union_files_xlsx(path_folder_union_file_xlsx,path_end_folder_union_file_xlsx)
+    except NameError:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'Выберите папку с файлами и папку куда будет генерироваться результат')
+    except SameFolder:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             'Выберите разные папки в качестве исходной и конечной')
 
 
 
@@ -1364,6 +1404,51 @@ if __name__ == '__main__':
                                     command=processing_comparison
                                     )
     btn_data_do_comparison.pack(padx=10, pady=10)
+
+    """
+        Создание вкладки по сведению файлов в один
+        """
+    tab_create_union_file_xlsx = ttk.Frame(tab_control)
+    tab_control.add(tab_create_union_file_xlsx, text='Свод\nв один файл')
+
+    create_union_file_xlsx_frame_description = LabelFrame(tab_create_union_file_xlsx)
+    create_union_file_xlsx_frame_description.pack()
+
+    lbl_hello_create_union_file_xlsx = Label(create_union_file_xlsx_frame_description,
+                                             text='Центр опережающей профессиональной подготовки Республики Бурятия\n'
+                                                  'Сбор файлов Excel в один файл с сохранением формул, форматирования.\n'
+                                                  'Каждый файл (и листы внутри) копируются на отдельный лист'
+                                             , width=60)
+    lbl_hello_create_union_file_xlsx.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
+
+    # Картинка
+    path_to_img_create_union_file_xlsx = resource_path('logo.png')
+    img_create_union_file_xlsx = PhotoImage(file=path_to_img_create_union_file_xlsx)
+    Label(create_union_file_xlsx_frame_description,
+          image=img_create_union_file_xlsx, padx=10, pady=10
+          ).pack(side=LEFT, anchor=E, ipadx=5, ipady=5)
+
+    # Создаем область для того чтобы поместить туда подготовительные кнопки(выбрать файл,выбрать папку и т.п.)
+    frame_data_union_file_xlsx = LabelFrame(tab_create_union_file_xlsx, text='Подготовка')
+    frame_data_union_file_xlsx.pack(padx=10, pady=10)
+
+    btn_choose_folder_data_union_file_xlsx = Button(frame_data_union_file_xlsx,
+                                                    text='1) Выберите папку с файлами',
+                                                    font=('Arial Bold', 14),
+                                                    command=select_folder_data_union_file_xlsx)
+    btn_choose_folder_data_union_file_xlsx.pack(padx=10, pady=10)
+
+    btn_choose_end_folder_data_union_file_xlsx = Button(frame_data_union_file_xlsx,
+                                                        text='2) Выберите конечную папку',
+                                                        font=('Arial Bold', 14),
+                                                        command=select_end_folder_data_union_file_xlsx)
+    btn_choose_end_folder_data_union_file_xlsx.pack(padx=10, pady=10)
+
+    btn_processing_union_file_xlsx = Button(frame_data_union_file_xlsx,
+                                            text='3) Свести в один файл',
+                                            font=('Arial Bold', 14),
+                                            command=processing_union_file_xlsx)
+    btn_processing_union_file_xlsx.pack(padx=10, pady=10)
 
     """
     Извлечение данных из таблиц со сложной структурой
