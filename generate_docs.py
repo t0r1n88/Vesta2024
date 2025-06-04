@@ -1,7 +1,7 @@
 """
 Функции для создания документов из шаблонов
 """
-
+from support_functions import convert_to_date,create_doc_convert_date
 import pandas as pd
 import numpy as np
 import os
@@ -19,6 +19,7 @@ import warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 warnings.simplefilter(action='ignore', category=DeprecationWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
+warnings.simplefilter(action='ignore', category=FutureWarning)
 pd.options.mode.chained_assignment = None
 import platform
 import logging
@@ -65,19 +66,12 @@ class PdfLinux(Exception):
     """
     pass
 
-def create_doc_convert_date(cell):
-    """
-    Функция для конвертации даты при создании документов
-    :param cell:
-    :return:
-    """
-    try:
-        string_date = datetime.datetime.strftime(cell, '%d.%m.%Y')
-        return string_date
-    except ValueError:
-        return ''
-    except TypeError:
-        return ''
+
+
+
+
+
+
 
 
 def processing_date_column(df, lst_columns):
@@ -99,7 +93,7 @@ def processing_date_column(df, lst_columns):
         else:  # иначе проверяем следующее значение
             continue
     for i in lst_date_columns:  # Перебираем список с колонками дат, превращаем их в даты и конвертируем в нужный строковый формат
-        df.iloc[:, i] = pd.to_datetime(df.iloc[:, i], errors='coerce', dayfirst=True)
+        df.iloc[:, i] = df.iloc[:, i].apply(convert_to_date)
         df.iloc[:, i] = df.iloc[:, i].apply(create_doc_convert_date)
 
 def check_date_columns(i, value):
@@ -327,7 +321,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
 
         # Конвертируем в пригодный строковый формат
         for i in lst_date_columns:
-            df.iloc[:, i] = pd.to_datetime(df.iloc[:, i], errors='coerce', dayfirst=True)
+            df.iloc[:, i] = df.iloc[:, i].apply(convert_to_date)
             df.iloc[:, i] = df.iloc[:, i].apply(create_doc_convert_date)
 
         # Конвертируем датафрейм в список словарей
@@ -1015,9 +1009,9 @@ if __name__ == '__main__':
     path_to_end_folder_doc_main = 'data/result'
     mode_combine_main = 'Yes'
     mode_group_main = 'No'
-    main_mode_structure_folder = 'Yes'
+    main_mode_structure_folder = 'No'
     main_structure_folder = '10,11,13'
-    main_mode_full = 'Yes'
+    main_mode_full = 'No'
 
     generate_docs_from_template(name_file_template_doc_main,name_file_data_doc_main,name_column_main, name_type_file_main, path_to_end_folder_doc_main,
                                 name_value_column_main, mode_pdf_main,

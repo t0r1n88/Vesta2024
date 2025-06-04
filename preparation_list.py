@@ -2,15 +2,14 @@
 Скрипт для подготовки списка
 Очистка некорректных данных, удаление лишних пробелов
 """
-from support_functions import write_df_to_excel # функция для записи в файл Excel с автоподбором ширины
+from support_functions import write_df_highlighting_error_to_excel, del_sheet, write_df_to_excel_error_prep_list # функция для записи в файл Excel с автоподбором ширины
 import time
 import gc
 import pandas as pd
-import numpy as np
 import openpyxl
-from openpyxl.utils.dataframe import dataframe_to_rows
+import numpy as np
 import xlsxwriter
-import datetime
+from datetime import datetime
 import re
 from tkinter import messagebox
 import logging
@@ -35,6 +34,59 @@ class ExceedingQuantity(Exception):
     """
     pass
 
+def convert_to_date_prep_list(value,current_date):
+    """
+    Функция для конвертации строки в текст
+    :param value: значение для конвертации
+    :param current_date: текущая дата
+    :return:
+    """
+    try:
+        if 'Ошибка' in value:
+            return value
+        else:
+            date_value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+            if date_value.date() > current_date:
+                string_date = datetime.strftime(date_value, '%d.%m.%Y')
+
+                return f'Ошибка: {string_date}, превышает текущую дату. Проверьте значение или системное время на компьютере'
+            return date_value
+    except ValueError:
+        result = re.search(r'^\d{2}\.\d{2}\.\d{4}$', value)
+        if result:
+            try:
+                temp_date = datetime.strptime(result.group(0), '%d.%m.%Y')
+                if temp_date.date() > current_date:
+                    string_date = datetime.strftime(temp_date, '%d.%m.%Y')
+                    return f'Ошибка: {string_date}, превышает текущую дату. Проверьте значение или системное время на компьютере'
+                return temp_date
+            except ValueError:
+                # для случаев вида 45.09.2007
+                return f'Ошибка: {value}, проверьте  правильность даты'
+        else:
+            # Пытаемся обработать варианты с пробелом между блоками
+            value = str(value)
+            lst_dig = re.findall(r'\d',value)
+            if len(lst_dig) != 8:
+                return f'Ошибка: {value}, проверьте  правильность даты'
+            # делаем строку
+            temp_date = f'{lst_dig[0]}{lst_dig[1]}.{lst_dig[2]}{lst_dig[3]}.{lst_dig[4]}{lst_dig[5]}{lst_dig[6]}{lst_dig[7]}'
+            try:
+                temp_date = datetime.strptime(temp_date, '%d.%m.%Y')
+                if temp_date.date() > current_date:
+                    string_date = datetime.strftime(temp_date, '%d.%m.%Y')
+                    return f'Ошибка: {string_date}, превышает текущую дату. Проверьте значение или системное время на компьютере'
+                return temp_date
+            except ValueError:
+                # для случаев вида 45.09.2007
+                return f'Ошибка: {value}, проверьте  правильность даты'
+
+    except:
+        return f'Ошибка: {value}, проверьте  правильность даты'
+
+
+
+
 
 def create_doc_convert_date(cell):
     """
@@ -43,14 +95,12 @@ def create_doc_convert_date(cell):
     :return:
     """
     try:
-        if cell is np.nan:
-            return 'Не заполнено'
-        string_date = datetime.datetime.strftime(cell, '%d.%m.%Y')
+        if pd.isna(cell):
+            return 'Ошибка: Не заполнено'
+        string_date = datetime.strftime(cell, '%d.%m.%Y')
         return string_date
-    except ValueError:
-        return f'Неправильное значение - {cell}'
-    except TypeError:
-        return f'Неправильное значение - {cell}'
+    except:
+        return f'Ошибка - {cell}'
 
 
 def capitalize_fio(value:str)->str:
@@ -75,7 +125,7 @@ def find_english_letter(value):
     result = re.findall(r'[a-zA-Z]',value)
     if result:
         english_let = ';'.join(result)
-        return f'Обнаружены символы английского алфавита: {english_let} в слове {value}'
+        return f'Ошибка: обнаружены символы английского алфавита: {english_let} в слове {value}'
     else:
         return value
 
@@ -93,7 +143,7 @@ def prepare_fio_text_columns(df:pd.DataFrame,lst_columns:list)->pd.DataFrame:
     if len(prepared_columns_lst) == 0: # проверка на случай не найденных значений
         return df
 
-    df[prepared_columns_lst] = df[prepared_columns_lst].fillna('Не заполнено')
+    df[prepared_columns_lst] = df[prepared_columns_lst].fillna('Ошибка: Не заполнено')
     df[prepared_columns_lst] = df[prepared_columns_lst].astype(str)
     df[prepared_columns_lst] = df[prepared_columns_lst].applymap(lambda x: x.strip() if isinstance(x, str) else x)  # применяем strip, чтобы все данные корректно вставлялись
     df[prepared_columns_lst] = df[prepared_columns_lst].applymap(lambda x:' '.join(x.split())) # убираем лишние пробелы между словами
@@ -107,6 +157,7 @@ def prepare_date_column(df:pd.DataFrame,lst_columns:list)->pd.DataFrame:
     df: датафрейм для обработки
     lst_columns: список колонок которые нужно обработать
     """
+    current_date = datetime.now().date()  # Получаем текущую дату
     prepared_columns_lst = [] # список для колонок содержащих слово дата
     for date_column in lst_columns:
         for name_column in df.columns:
@@ -114,8 +165,8 @@ def prepare_date_column(df:pd.DataFrame,lst_columns:list)->pd.DataFrame:
                 prepared_columns_lst.append(name_column)
     if len(prepared_columns_lst) == 0: # проверка на случай не найденных значений
         return df
-    df[prepared_columns_lst] = df[prepared_columns_lst].fillna('Не заполнено')
-    df[prepared_columns_lst] = df[prepared_columns_lst].applymap(lambda x:pd.to_datetime(x,errors='ignore',dayfirst=True)) # приводим к типу дата
+    df[prepared_columns_lst] = df[prepared_columns_lst].fillna('Ошибка: Не заполнено')
+    df[prepared_columns_lst] = df[prepared_columns_lst].applymap(lambda x:convert_to_date_prep_list(x,current_date)) # приводим к типу дата
     df[prepared_columns_lst] = df[prepared_columns_lst].applymap(create_doc_convert_date)  # приводим к виду ДД.ММ.ГГГГ
     return df
 
@@ -169,7 +220,7 @@ def check_snils(snils):
         out_snils = f'{first_group}-{second_group}-{third_group} {four_group}'
         return out_snils
     else:
-        return f'Неправильное значение!В СНИЛС должно быть 11 цифр - {snils} -{len(result)} цифр'
+        return f'Ошибка: В СНИЛС должно быть 11 цифр - {snils} -{len(result)} цифр'
 
 def prepare_inn_column(df:pd.DataFrame,lst_columns:list)->pd.DataFrame:
     """
@@ -195,13 +246,13 @@ def check_inn(inn):
     Функция для приведения значений снилс в вид 12 цифр
     """
     if inn is np.nan:
-        return 'Не заполнено'
+        return 'Ошибка: Не заполнено'
     inn = str(inn)
     result = re.findall(r'\d', inn) # ищем цифры
     if len(result) == 12:
         return ''.join(result)
     else:
-        return f'Неправильное значение ИНН (ИНН физлица состоит из 12 цифр)- {inn} -{len(inn)} цифр'
+        return f'Ошибка: (ИНН физлица состоит из 12 цифр)- {inn} -{len(inn)} цифр'
 
 def prepare_passport_column(df:pd.DataFrame)->pd.DataFrame:
     """
@@ -246,26 +297,26 @@ def check_series_passport(series:str)->str:
     Функция для проверки серии паспорта, должно быть 4 цифры
     """
     if series is np.nan:
-        return 'Не заполнено'
+        return 'Ошибка: Не заполнено'
     series = str(series)
     result = re.findall(r'\d', series) # ищем цифры
     if len(result) == 4:
         return ''.join(result)
     else:
-        return f'Неправильное значение серии паспорта (должно быть 4 цифры) - {series}'
+        return f'Ошибка: в серии паспорта должно быть 4 цифры - {series}'
 
 def check_number_passport(number:str)->str:
     """
     Функция для проверки номера паспорта, должно быть 6 цифр
     """
     if number is np.nan:
-        return 'Не заполнено'
+        return 'Ошибка: Не заполнено'
     number = str(number)
     result = re.findall(r'\d', number) # ищем цифры
     if len(result) == 6:
         return ''.join(result)
     else:
-        return f'Неправильное значение номера паспорта(должно быть 6 цифр) - {number}'
+        return f'Ошибка: в номере паспорта должно быть 6 цифр - {number}'
 
 def check_code_passport(code:str)->str:
     """
@@ -280,7 +331,7 @@ def check_code_passport(code:str)->str:
         second_group = ''.join(result[3:6])
         return f'{first_group}-{second_group}'
     else:
-        return f'Неправильное значение кода подразделения(должно быть 6 цифр в формате XXX-XXX) - {code}'
+        return f'Ошибка: в коде подразделения должно быть 6 цифр в формате XXX-XXX - {code}'
 
 def prepare_phone_columns(df:pd.DataFrame,phone_text:str) ->pd.DataFrame:
     """
@@ -305,7 +356,7 @@ def check_phone_number(phone:str,pattern:str)->str:
     Функция для очистки значения номера телефона от пробельных символов,букв и точки
     """
     if phone is np.nan:
-        return 'Не заполнено'
+        return 'Ошибка: Не заполнено'
     phone = str(phone)
     clean_phone = re.sub(pattern,'',phone)
     return clean_phone
@@ -330,8 +381,8 @@ def prepare_email_columns(df:pd.DataFrame,second_option:str)->pd.DataFrame:
 
     if len(prepared_columns_email_lst) == 0:
         return df
-    df[prepared_columns_email_lst] = df[prepared_columns_email_lst].fillna('Не заполнено')
-    df[prepared_columns_email_lst] = df[prepared_columns_email_lst].applymap(lambda x:re.sub(r'\s','',x) if x !='Не заполнено' else x)
+    df[prepared_columns_email_lst] = df[prepared_columns_email_lst].fillna('Ошибка: Не заполнено')
+    df[prepared_columns_email_lst] = df[prepared_columns_email_lst].applymap(lambda x:re.sub(r'\s','',x) if x !='Ошибка: Не заполнено' else x)
 
     return df
 
@@ -347,13 +398,13 @@ def check_mixing(value:str):
     if russian_letters and english_letters:
         # если русских букв больше то указываем что в русском слове встречаются английские буквы
         if len(russian_letters) > len(english_letters):
-            return (f'В слове {value} найдены английские буквы: {",".join(english_letters)}')
+            return (f'Ошибка: в слове {value} найдены английские буквы: {",".join(english_letters)}')
         elif len(russian_letters) < len(english_letters):
             # если английских букв больше то указываем что в английском слове встречаются русские буквы
-            return (f'В слове {value} найдены русские буквы: {",".join(russian_letters)}')
+            return (f'Ошибка: в слове {value} найдены русские буквы: {",".join(russian_letters)}')
         else:
             # если букв поровну то просто выводим их список
-            return (f'В слове {value} найдены русские буквы: {",".join(russian_letters)} и английские буквы: {";".join(english_letters)}')
+            return (f'Ошибка: в слове {value} найдены русские буквы: {",".join(russian_letters)} и английские буквы: {";".join(english_letters)}')
     else:
         # если слово состоит из букв одного алфавита
         return False
@@ -368,7 +419,7 @@ def find_mixing_alphabets(cell):
         lst_result = list(map(check_mixing,lst_word)) # ищем смешения
         lst_result = [value for value in lst_result if value] # отбираем найденые смешения если они есть
         if lst_result:
-            return f'В тексте {cell} найдено смешение русского и английского: {"; ".join(lst_result)}'
+            return f'Ошибка: в тексте {cell} найдено смешение русского и английского: {"; ".join(lst_result)}'
         else:
             return cell
     else:
@@ -518,10 +569,44 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
 
         dct_df = {'Лист1': df}
         write_index = False
-        wb_main = write_df_to_excel(dct_df, write_index)
+        wb_main = write_df_highlighting_error_to_excel(dct_df, write_index)
+        wb_main = del_sheet(wb_main,['Sheet', 'Sheet1', 'Для подсчета'])
+
         name_file = file_data.split('.xlsx')[0]  # получаем путь без расширения
         name_file = name_file.split('/')[-1]
         wb_main.save(f'{path_end_folder}/Обработанный {name_file} {current_time}.xlsx')
+
+        # Сохраняем датафрейм с ошибками разделенными по листам в соответсвии с колонками
+        dct_sheet_error_df = dict()  # создаем словарь для хранения названия и датафрейма
+        used_name_sheet = set()  # множество для хранения значений которые уже были использованы
+
+        lst_name_columns = [name_cols for name_cols in df.columns if
+                            'Unnamed' not in name_cols]  # получаем список колонок
+
+        for idx, value in enumerate(lst_name_columns):
+            # получаем ошибки
+            temp_df = df[df[value].astype(str).str.contains('Ошибка')]  # фильтруем
+            if temp_df.shape[0] == 0:
+                continue
+
+            temp_df = temp_df[value].to_frame()  # оставляем только одну колонку
+
+            temp_df.insert(0, '№ строки с ошибкой в исходном файле', list(map(lambda x: x + 2, list(temp_df.index))))
+            short_value = value[:27]  # получаем обрезанное значение
+            short_value = re.sub(r'[\[\]\'+()<> :"?*|\\/]', '_', short_value)
+
+            if short_value.lower() in used_name_sheet:
+                short_value = f'{short_value}_{idx}'  # добавляем окончание
+            used_name_sheet.add(short_value.lower())
+
+            dct_sheet_error_df[short_value] = temp_df
+        if len(dct_sheet_error_df) != 0:
+            file_error_wb = write_df_to_excel_error_prep_list(dct_sheet_error_df, write_index=False)
+            file_error_wb = del_sheet(file_error_wb, ['Sheet', 'Sheet1', 'Для подсчета'])
+            file_error_wb.save(f'{path_end_folder}/Ошибки {name_file}.xlsx')
+        else:
+            file_error_wb = openpyxl.Workbook()
+            file_error_wb.save(f'{path_end_folder}/Ошибок {name_file}.xlsx')
 
     except UnboundLocalError:
         pass

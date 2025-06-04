@@ -1,6 +1,8 @@
 """
 Функции для соединения, сравнения, слияния 2 таблиц
 """
+from support_functions import convert_to_date,create_doc_convert_date
+
 import pandas as pd
 import numpy as np
 
@@ -203,15 +205,13 @@ def merging_two_tables(file_params, first_sheet_name, second_sheet_name, first_f
         # Проверяем наличие колонок с датами в списке колонок для объединения чтобы привести их в нормальный вид
         for number_column_params in int_params_first_columns:
             if 'дата' in first_df.columns[number_column_params].lower():
-                first_df.iloc[:, number_column_params] = pd.to_datetime(first_df.iloc[:, number_column_params],
-                                                                        errors='coerce', dayfirst=True)
+                first_df.iloc[:, number_column_params] = first_df.iloc[:, number_column_params].apply(convert_to_date)
                 first_df.iloc[:, number_column_params] = first_df.iloc[:, number_column_params].apply(
                     create_doc_convert_date)
 
         for number_column_params in int_params_second_columns:
             if 'дата' in second_df.columns[number_column_params].lower():
-                second_df.iloc[:, number_column_params] = pd.to_datetime(second_df.iloc[:, number_column_params],
-                                                                         errors='coerce', dayfirst=True)
+                second_df.iloc[:, number_column_params] = second_df.iloc[:, number_column_params].apply(convert_to_date)
                 second_df.iloc[:, number_column_params] = second_df.iloc[:, number_column_params].apply(
                     create_doc_convert_date)
 
@@ -399,17 +399,13 @@ def merging_two_tables(file_params, first_sheet_name, second_sheet_name, first_f
         # Проверяем наличие колонок с датами в списке колонок для объединения чтобы привести их в нормальный вид
         for number_column_params in int_params_first_columns:
             if 'дата' in precise_first_df.columns[number_column_params].lower():
-                precise_first_df.iloc[:, number_column_params] = pd.to_datetime(
-                    precise_first_df.iloc[:, number_column_params],
-                    errors='coerce', dayfirst=True)
+                precise_first_df.iloc[:, number_column_params] =  precise_first_df.iloc[:, number_column_params].apply(convert_to_date)
                 precise_first_df.iloc[:, number_column_params] = precise_first_df.iloc[:, number_column_params].apply(
                     create_doc_convert_date)
 
         for number_column_params in int_params_second_columns:
             if 'дата' in precise_second_df.columns[number_column_params].lower():
-                precise_second_df.iloc[:, number_column_params] = pd.to_datetime(
-                    precise_second_df.iloc[:, number_column_params],
-                    errors='coerce', dayfirst=True)
+                precise_second_df.iloc[:, number_column_params] = precise_second_df.iloc[:, number_column_params].apply(convert_to_date)
                 precise_second_df.iloc[:, number_column_params] = precise_second_df.iloc[:, number_column_params].apply(
                     create_doc_convert_date)
 
