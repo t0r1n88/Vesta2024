@@ -1520,7 +1520,7 @@ if __name__ == '__main__':
     Создание вкладки для подсчета табличных значений
     """
     tab_create_counting_report = ttk.Frame(tab_control)
-    tab_control.add(tab_create_counting_report, text='Обработка\nотчетов')
+    tab_control.add(tab_create_counting_report, text='Суммирование\nотчетов')
 
     create_counting_report_frame_description = LabelFrame(tab_create_counting_report)
     create_counting_report_frame_description.pack()

@@ -170,10 +170,10 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
                 params_df = params_df.astype(str) # приводим к строковому виду
 
             except NameError:
-                messagebox.showerror('Эльпида Школьная отчетность',
+                messagebox.showerror('Веста Обработка таблиц и создание документов',
                                      f'Выберите файл с параметрами обработки')
             except:
-                messagebox.showerror('Эльпида Школьная отчетность',
+                messagebox.showerror('Веста Обработка таблиц и создание документов',
                                      f'Не удалось обработать файл с параметрами. Возможно файл поврежден')
 
             # Создаем словарь параметров
@@ -275,13 +275,13 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
                                 index=False)
 
                         if count_errors != 0:
-                            messagebox.showinfo('Эльпида Школьная отчетность',
+                            messagebox.showinfo('Веста Обработка таблиц и создание документов',
                                                 f'В некоторых файлах обнаружены ошибки!\nОбработано файлов:  {count} из {quantity_files}\n Необработанные файлы указаны в файле {path_to_end_folder_calculate_data}/Ошибки {current_time}.xlsx')
                         else:
-                            messagebox.showinfo('Эльпида Школьная отчетность',
+                            messagebox.showinfo('Веста Обработка таблиц и создание документов',
                                                 f'Обработка файлов успешно завершена!\nОбработано файлов:  {count} из {quantity_files}')
                     else:
-                        messagebox.showwarning('Эльпида Школьная отчетность',
+                        messagebox.showwarning('Веста Обработка таблиц и создание документов',
                                                f'Обработано {count} из {quantity_files} файлов.\n Причины необработки файлов указаны в файле {path_to_end_folder_calculate_data}/Ошибки {current_time}.xlsx')
 
 
@@ -298,10 +298,10 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
                 params_df.dropna(how='any', inplace=True)  # очищаем от неполных строк
                 params_df = params_df.astype(str) # приводим к строковому виду
             except NameError:
-                messagebox.showerror('Эльпида Школьная отчетность',
+                messagebox.showerror('Веста Обработка таблиц и создание документов',
                                      f'Выберите файл с параметрами обработки')
             except:
-                messagebox.showerror('Эльпида Школьная отчетность',
+                messagebox.showerror('Веста Обработка таблиц и создание документов',
                                      f'Не удалось обработать файл с параметрами. Возможно файл поврежден')
 
 
@@ -428,33 +428,33 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
                                            index=False)
 
                 if count_errors != 0:
-                    messagebox.showinfo('Эльпида Школьная отчетность',
+                    messagebox.showinfo('Веста Обработка таблиц и создание документов',
                                         f'В некоторых файлах обнаружены ошибки!\nОбработано файлов:  {count} из {quantity_files}\n Необработанные файлы указаны в файле {path_to_end_folder_calculate_data}/Ошибки {current_time}.xlsx')
                 else:
-                    messagebox.showinfo('Эльпида Школьная отчетность',
+                    messagebox.showinfo('Веста Обработка таблиц и создание документов',
                                         f'Обработка файлов успешно завершена!\nОбработано файлов:  {count} из {quantity_files}')
             else:
-                messagebox.showwarning('Эльпида Школьная отчетность',
+                messagebox.showwarning('Веста Обработка таблиц и создание документов',
                                     f'Обработано {count} из {quantity_files} файлов.\n Причины необработки файлов указаны в файле {path_to_end_folder_calculate_data}/Ошибки {current_time}.xlsx')
 
     except UnboundLocalError:
         pass
     except NameError:
-        messagebox.showerror('Эльпида Школьная отчетность',
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите шаблон,файл с данными и папку куда будут генерироваться файлы')
     except FileNotFoundError:
-        messagebox.showerror('Эльпида Школьная отчетность',
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Перенесите файлы, конечную папку с которой вы работете в корень диска. Проблема может быть\n '
                              f'в слишком длинном пути к обрабатываемым файлам или конечной папке.')
     except NotFile:
-        messagebox.showerror('Эльпида Школьная отчетность',
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'В выбранной папке отсутствуют файлы Excel (xlsx))')
     except NotCorrectParams:
-        messagebox.showerror('Эльпида Школьная отчетность',
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Не найдено ни одного корректного адреса ячейки. Адрес ячейки должен выглядить так A5, AB14 и т.п.')
     except:
         logging.exception('AN ERROR HAS OCCURRED')
-        messagebox.showerror('Эльпида Школьная отчетность',
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
                              'Возникла ошибка!!! Подробности ошибки в файле error.log')
 
 if __name__ == '__main__':
