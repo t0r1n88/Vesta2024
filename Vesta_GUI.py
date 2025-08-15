@@ -15,6 +15,7 @@ from split_table import split_table  # Функция для разделени�
 from preparation_list import prepare_list  # Функция для очистки и обработки списка
 from create_svod import generate_svod_for_columns  # Функция для создания сводных таблиц по заданным колонкам
 from counting_report import counting_table_report # Функция для подсчета табличных отчетов
+from create_batch_documents import processing_create_batch_documents # Функция для пакетного создания файлов
 
 
 import pandas as pd
@@ -90,6 +91,38 @@ def select_end_folder_doc():
     """
     global path_to_end_folder_doc
     path_to_end_folder_doc = filedialog.askdirectory()
+
+
+"""
+Функции для пакетного создания файлов
+"""
+def select_folder_template_batch():
+    """
+    Функция для выбора папки с шаблонами
+    :return: Путь к папке с шаблонами
+    """
+    global template_folder_batch
+    template_folder_batch = filedialog.askdirectory()
+
+
+
+def select_file_data_batch():
+    """
+    Функция для выбора файла с данными на основе которых будет генерироваться документ
+    :return: Путь к файлу с данными
+    """
+    global name_file_data_batch
+    # Получаем путь к файлу
+    name_file_data_batch = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+
+
+def select_end_folder_batch():
+    """
+    Функция для выбора папки куда будут генерироваться файлы
+    :return:
+    """
+    global path_to_end_folder_batch
+    path_to_end_folder_batch = filedialog.askdirectory()
 
 
 # Функции для вкладки извлечение данных
@@ -229,6 +262,23 @@ def generate_docs_other():
     except NameError as e:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите шаблон,файл с данными и папку куда будут генерироваться файлы')
+        logging.exception('AN ERROR HAS OCCURRED')
+
+
+
+def generate_docs_batch():
+    """
+    Функция для создания документов из произвольных таблиц(т.е. отличающихся от структуры базы данных Веста Обработка таблиц и создание документов ver 1.35)
+    :return:
+    """
+    try:
+        name_column_batch = entry_name_column_batch.get() # название колонки по которой будут создаваться имена файлов
+
+        processing_create_batch_documents(name_file_data_batch, template_folder_batch, path_to_end_folder_batch, name_column_batch)
+
+    except NameError as e:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'Выберите папку с шаблонами,файл с данными и папку куда будут генерироваться файлы')
         logging.exception('AN ERROR HAS OCCURRED')
 
 
@@ -735,15 +785,15 @@ def set_window_size(window):
 
     # Устанавливаем размер окна в 80% от ширины и высоты экрана
     if screen_width >= 3840:
-        width = int(screen_width * 0.28)
+        width = int(screen_width * 0.38)
     elif screen_width >= 2560:
-        width = int(screen_width * 0.39)
+        width = int(screen_width * 0.49)
     elif screen_width >= 1920:
-        width = int(screen_width * 0.48)
+        width = int(screen_width * 0.55)
     elif screen_width >= 1600:
-        width = int(screen_width * 0.58)
+        width = int(screen_width * 0.85)
     elif screen_width >= 1280:
-        width = int(screen_width * 0.70)
+        width = int(screen_width * 0.85)
     elif screen_width >= 1024:
         width = int(screen_width * 0.85)
     else:
@@ -823,7 +873,7 @@ def open_libraries():
 
 if __name__ == '__main__':
     window = Tk()
-    window.title('Веста Обработка таблиц и создание документов ver 1.57')
+    window.title('Веста Обработка таблиц и создание документов ver 1.56A')
     # Устанавливаем размер и положение окна
     set_window_size(window)
     # window.geometry('774x760')
@@ -1165,6 +1215,74 @@ if __name__ == '__main__':
                                     command=generate_docs_other
                                     )
     btn_create_files_other.pack(padx=10, pady=10)
+
+    """
+    Создаем вкладку пакетного создания документов
+    """
+    tab_create_batch = Frame(tab_control)
+    tab_control.add(tab_create_batch, text='Пакетное создание\nдокументов')
+
+    create_batch_frame_description = LabelFrame(tab_create_batch)
+    create_batch_frame_description.pack()
+
+    lbl_hello = Label(create_batch_frame_description,
+                      text='Пакетная генерация документов по шаблонам\n'
+                           'ПРИМЕЧАНИЯ\n'
+                           'В файле с данными должно быть 2 листа !!!\n'
+                           'На первом листе константы, на втором листе данные которые изменяются'
+                           'Заголовок таблицы должен занимать только первую строку!\n'
+                           'Для корректной работы программы уберите из таблицы\nобъединенные ячейки'
+                      , width=60)
+    lbl_hello.pack(side=LEFT, anchor=N, ipadx=25, ipady=10)
+    # #
+    # #
+    # Картинка
+    path_to_img = resource_path('logo.png')
+    img_batch = PhotoImage(file=path_to_img)
+    Label(create_batch_frame_description,
+          image=img_batch, padx=10, pady=10
+          ).pack(side=LEFT, anchor=E, ipadx=5, ipady=5)
+
+    # Создаем фрейм для действий
+    create_batch_frame_action = LabelFrame(tab_create_batch, text='Подготовка')
+    create_batch_frame_action.pack()
+
+    # Создаем кнопку Выбрать шаблон
+    btn_template_batch = Button(create_batch_frame_action, text='1) Выберите папку с шаблонами', font=('Arial Bold', 14),
+                                command=select_folder_template_batch
+                                )
+    btn_template_batch.pack(padx=10, pady=10)
+
+    btn_data_batch = Button(create_batch_frame_action, text='2) Выберите файл с данными', font=('Arial Bold', 14),
+                            command=select_file_data_batch
+                            )
+    btn_data_batch.pack(padx=10, pady=10)
+    #
+    # Создаем кнопку для выбора папки куда будут генерироваться файлы
+
+    # Определяем текстовую переменную
+    entry_name_column_batch = StringVar()
+    # Описание поля
+    label_name_column_batch = Label(create_batch_frame_action,
+                                    text='3) Введите название колонки в таблице\n по которой будут создаваться имена файлов\n'
+                                         'на втором листе в таблице')
+    label_name_column_batch.pack(padx=10, pady=10)
+    # поле ввода
+    data_column_batch_entry = Entry(create_batch_frame_action, textvariable=entry_name_column_batch, width=30)
+    data_column_batch_entry.pack(ipady=5)
+
+    btn_choose_end_folder_batch = Button(create_batch_frame_action, text='4) Выберите конечную папку',
+                                         font=('Arial Bold', 14),
+                                         command=select_end_folder_batch
+                                         )
+    btn_choose_end_folder_batch.pack(padx=10, pady=10)
+
+    # Создаем кнопку для пакетного создания документов
+    btn_create_files_batch = Button(tab_create_batch, text='5) Создать документ(ы)',
+                                    font=('Arial Bold', 20),
+                                    command=generate_docs_batch
+                                    )
+    btn_create_files_batch.pack(padx=10, pady=10)
 
     """
     Создаем вкладку для обработки дат рождения

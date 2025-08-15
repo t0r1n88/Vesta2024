@@ -46,6 +46,12 @@ class NotFileSource(Exception):
     """
     pass
 
+class NotColumn(Exception):
+    """
+    Исключение для обработки случая когда не найдена колонка по которой будут делаться названия файлов
+    """
+    pass
+
 
 def create_doc_convert_date(cell):
     """
@@ -294,89 +300,104 @@ def processing_create_batch_documents(data_file:str,folder_template:str,result_f
         if folder_template == result_folder:
             raise SamePathFolder
 
-        try:
-            req_wb = openpyxl.load_workbook(data_file)  # загружаем файл для подсчета количества листов
-            if len(req_wb.sheetnames) < 2:
-                raise NotReqSheet
+        req_wb = openpyxl.load_workbook(data_file)  # загружаем файл для подсчета количества листов
+        if len(req_wb.sheetnames) < 2:
+            raise NotReqSheet
 
-            descr_sheet = req_wb.sheetnames[0] # название листа с константами
-            data_sheet = req_wb.sheetnames[1] # названия листа с данными
-            # Обрабатываем лист с константами
-            descr_df = pd.read_excel(data_file, sheet_name=descr_sheet, dtype=str, usecols='A:B')  # получаем данные констант
-            descr_df.dropna(how='all', inplace=True)  # удаляем пустые строки
+        descr_sheet = req_wb.sheetnames[0] # название листа с константами
+        data_sheet = req_wb.sheetnames[1] # названия листа с данными
+        # Обрабатываем лист с константами
+        descr_df = pd.read_excel(data_file, sheet_name=descr_sheet, dtype=str, usecols='A:B')  # получаем данные констант
+        descr_df.dropna(how='all', inplace=True)  # удаляем пустые строки
 
-            # Предобработка датафрейма с данными слушателей
-            data_df = pd.read_excel(data_file, sheet_name=data_sheet, dtype=str)  # получаем данные
-            # Проверяем наличие нужных колонок в файле с данными
-            data_df.dropna(how='all', inplace=True)  # удаляем пустые строки
-        except NotReqSheet:
-            messagebox.showerror('Веста Обработка таблиц и создание документов',
-                                 f'В файле с данными должно быть минимум 2 листа')
-        except:
-            messagebox.showerror('Веста Обработка таблиц и создание документов',
-                                 f'Не удалось открыть файл с данными {data_file}\n'
-                                 f'Проверьте файл на целостность и возможность открытия')
-        else:
-            req_wb.close() # закрываем файл
+        # Предобработка датафрейма с данными слушателей
+        data_df = pd.read_excel(data_file, sheet_name=data_sheet, dtype=str)  # получаем данные
+        # Проверяем наличие нужных колонок в файле с данными
+        data_df.dropna(how='all', inplace=True)  # удаляем пустые строки
+        if name_file_column not in data_df.columns:
+            raise NotColumn
 
-            descr_df = descr_df.transpose()
-            descr_df.columns = descr_df.iloc[0]  # устанавливаем первую строку в качестве названий колонок
-            descr_df = descr_df.iloc[1:]  # удаляем первую строку
-            descr_df.index = [0] # переименовываем оставшийся индекс в 0
-            descr_df = descr_df.applymap(
-                lambda x: re.sub(r'\s+', ' ', x) if isinstance(x, str) else x)  # очищаем от лишних пробелов
-            descr_df = descr_df.applymap(
-                lambda x: x.strip() if isinstance(x, str) else x)  # очищаем от пробелов в начале и конце
+        req_wb.close() # закрываем файл
 
-            # делаем строковыми названия колонок
-            descr_df.columns = list(map(str,descr_df.columns))
-            data_df.columns = list(map(str,data_df.columns))
+        descr_df = descr_df.transpose()
+        descr_df.columns = descr_df.iloc[0]  # устанавливаем первую строку в качестве названий колонок
+        descr_df = descr_df.iloc[1:]  # удаляем первую строку
+        descr_df.index = [0] # переименовываем оставшийся индекс в 0
+        descr_df = descr_df.applymap(
+            lambda x: re.sub(r'\s+', ' ', x) if isinstance(x, str) else x)  # очищаем от лишних пробелов
+        descr_df = descr_df.applymap(
+            lambda x: x.strip() if isinstance(x, str) else x)  # очищаем от пробелов в начале и конце
 
-            # проверяем на совпадение названий колонок в обоих листах
-            intersection_columns = set(descr_df.columns).intersection(set(data_df.columns))
-            if len(intersection_columns) > 0:
-                raise SameNameColumn
+        # делаем строковыми названия колонок
+        descr_df.columns = list(map(str,descr_df.columns))
+        data_df.columns = list(map(str,data_df.columns))
 
-            # Обрабатываем колонки с датами в описании
-            lst_date_columns_descr = []  # список для колонок с датами
-            for idx, column in enumerate(descr_df.columns):
-                if 'дата' in column.lower():
-                    lst_date_columns_descr.append(idx)
+        # проверяем на совпадение названий колонок в обоих листах
+        intersection_columns = set(descr_df.columns).intersection(set(data_df.columns))
+        if len(intersection_columns) > 0:
+            raise SameNameColumn
 
-            descr_df = convert_string_date(descr_df,lst_date_columns_descr)
-            # обрабатываем колонки с датами в списке
-            lst_date_columns_data = []  # список для колонок с датами
-            for idx, column in enumerate(data_df.columns):
-                if 'дата' in column.lower():
-                    lst_date_columns_data.append(column)
-            data_df[lst_date_columns_data] = data_df[lst_date_columns_data].applymap(convert_to_date)  # Приводим к типу дата
+        # Обрабатываем колонки с датами в описании
+        lst_date_columns_descr = []  # список для колонок с датами
+        for idx, column in enumerate(descr_df.columns):
+            if 'дата' in column.lower():
+                lst_date_columns_descr.append(idx)
+
+        descr_df = convert_string_date(descr_df,lst_date_columns_descr)
+        # обрабатываем колонки с датами в списке
+        lst_date_columns_data = []  # список для колонок с датами
+        for idx, column in enumerate(data_df.columns):
+            if 'дата' in column.lower():
+                lst_date_columns_data.append(column)
+        data_df[lst_date_columns_data] = data_df[lst_date_columns_data].applymap(convert_to_date)  # Приводим к типу дата
 
 
-            # приводим даты к строковому типу
-            data_df[lst_date_columns_data] = data_df[lst_date_columns_data].applymap(
-                lambda x: x.strftime('%d.%m.%Y') if isinstance(x, (pd.Timestamp, datetime.datetime)) and pd.notna(x) else x)
+        # приводим даты к строковому типу
+        data_df[lst_date_columns_data] = data_df[lst_date_columns_data].applymap(
+            lambda x: x.strftime('%d.%m.%Y') if isinstance(x, (pd.Timestamp, datetime.datetime)) and pd.notna(x) else x)
 
-            # получаем списки валидных названий колонок
-            descr_valid_cols,descr_not_valid_cols = selection_name_column(list(descr_df.columns),r'^[a-zA-ZЁёа-яА-Я_]+$')
-            data_valid_cols, data_not_valid_cols = selection_name_column(list(data_df.columns),r'^[a-zA-ZЁёа-яА-Я_]+$')
+        # получаем списки валидных названий колонок
+        descr_valid_cols,descr_not_valid_cols = selection_name_column(list(descr_df.columns),r'^[a-zA-ZЁёа-яА-Я_]+$')
+        data_valid_cols, data_not_valid_cols = selection_name_column(list(data_df.columns),r'^[a-zA-ZЁёа-яА-Я_]+$')
 
-            data_df[name_file_column] = data_df[name_file_column].fillna('_')
-            # заполняем наны пробелами
-            descr_df.fillna(' ',inplace=True)
-            data_df.fillna(' ',inplace=True)
+        data_df[name_file_column] = data_df[name_file_column].fillna('_')
+        # заполняем наны пробелами
+        descr_df.fillna(' ',inplace=True)
+        data_df.fillna(' ',inplace=True)
 
-            # Словарь с константами
-            dct_descr = dict()
-            for name_column in descr_valid_cols:
-                dct_descr[name_column] = descr_df.loc[0,name_column]
+        # Словарь с константами
+        dct_descr = dict()
+        for name_column in descr_valid_cols:
+            dct_descr[name_column] = descr_df.loc[0,name_column]
 
 
-            generate_docs(dct_descr,data_df[data_valid_cols],folder_template,result_folder,name_file_column)
+        generate_docs(dct_descr,data_df[data_valid_cols],folder_template,result_folder,name_file_column)
     except FileNotFoundError as e:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Не удалось создать файл с названием {e}\n'
                              f'Уменьшите количество символов в соответствующей строке файла с данными в колонке по которой создаются имена файлов или выберите более короткий путь к итоговой папке')
 
+    except NotFileSource:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'В папке с шаблонами не найдены файлы docx !!!')
+    except exceptions.TemplateSyntaxError:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'Ошибка в оформлении вставляемых значений в шаблоне\n'
+                             f'Проверьте свой шаблон на наличие следующих ошибок:\n'
+                             f'1) Вставляемые значения должны быть оформлены двойными фигурными скобками\n'
+                             f'{{{{Вставляемое_значение}}}}\n'
+                             f'2) В названии колонки в таблице откуда берутся данные - есть пробелы,цифры,знаки пунктуации и т.п.\n'
+                             f'в названии колонки должны быть только буквы и нижнее подчеркивание.\n'
+                             f'{{{{Дата_рождения}}}}')
+    except NotReqSheet:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'В файле с данными должно быть минимум 2 листа')
+    except NotColumn:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'На листе с изменяемыми данными (т.е. второй лист по порядку) отсутствует колонка по значениям которой будут создаваться названия файлов')
+
+    else:
+        messagebox.showinfo('Веста Обработка таблиц и создание документов', 'Создание документов успешно завершено !')
 
 
 
