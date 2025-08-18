@@ -162,7 +162,7 @@ def copy_folder_structure(source_folder:str,destination_folder:str):
 
     return dct_path
 
-def combine_all_docx(filename_master, files_lst,path_to_end_folder_doc):
+def combine_all_docx(filename_master, files_lst,path_to_end_folder_doc,name_template:str):
     """
     Функция для объединения файлов Word взято отсюда
     https://stackoverflow.com/questions/24872527/combine-word-document-using-python-docx
@@ -184,7 +184,7 @@ def combine_all_docx(filename_master, files_lst,path_to_end_folder_doc):
         doc_temp = Document(files_lst[i])
         composer.append(doc_temp)
     # Сохраняем файл
-    composer.save(f"{path_to_end_folder_doc}/ОБЩИЙ файл от {current_time}.docx")
+    composer.save(f"{path_to_end_folder_doc}/{name_template}_ОБЩИЙ файл от {current_time}.docx")
 
 
 
@@ -214,6 +214,8 @@ def generate_docs(dct_descr:dict,data_df:pd.DataFrame,source_folder:str,destinat
     for source_folder, dest_folder in dct_path.items():
         for file in os.listdir(source_folder):
             if file.endswith('.docx') and not file.startswith('~$'):  # получаем только файлы docx и не временные
+                name_template = source_folder.split('/')[-1] # получаем название шаблона
+                name_template = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_', name_template)
                 # определяем тип создаваемого документа
                 if 'раздельный' in file.lower():
                     used_name_file = set()  # множество для уже использованных имен файлов
@@ -230,7 +232,7 @@ def generate_docs(dct_descr:dict,data_df:pd.DataFrame,source_folder:str,destinat
                         if name_file[:80] in used_name_file:
                             name_file = f'{name_file[:75]}_{idx}'
 
-                        doc.save(f'{dest_folder}/{name_file[:80]}.docx')
+                        doc.save(f'{dest_folder}/{name_template}_{name_file[:80]}.docx')
                         used_name_file.add(name_file[:80])  # добавляем в использованные названия
                 elif 'общий' in file.lower():
                     # Список с созданными файлами
@@ -256,7 +258,7 @@ def generate_docs(dct_descr:dict,data_df:pd.DataFrame,source_folder:str,destinat
                         if len(files_lst) != 0:  # проверка на заполнение листа с данными
                             main_doc = files_lst.pop(0)
                             # Запускаем функцию
-                            combine_all_docx(main_doc, files_lst, dest_folder)
+                            combine_all_docx(main_doc, files_lst, dest_folder,name_template)
                 else:
                     # генерируем текущее время
                     t = time.localtime()
