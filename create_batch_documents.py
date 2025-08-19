@@ -8,6 +8,7 @@ import os
 import re
 import datetime
 from docxtpl import DocxTemplate
+from docx.opc.exceptions import PackageNotFoundError
 import tempfile
 from docxcompose.composer import Composer
 from docx import Document
@@ -375,6 +376,10 @@ def processing_create_batch_documents(data_file:str,folder_template:str,result_f
 
         generate_docs(dct_descr,data_df[data_valid_cols],folder_template,result_folder,name_file_column)
     except FileNotFoundError as e:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'Не удалось создать файл с названием {e}\n'
+                             f'Уменьшите количество символов в соответствующей строке файла с данными в колонке по которой создаются имена файлов или выберите более короткий путь к итоговой папке')
+    except PackageNotFoundError as e:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Не удалось создать файл с названием {e}\n'
                              f'Уменьшите количество символов в соответствующей строке файла с данными в колонке по которой создаются имена файлов или выберите более короткий путь к итоговой папке')
