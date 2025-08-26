@@ -718,10 +718,10 @@ def processing_counting_report():
         # подсчитываем
         counting_table_report(name_file_params_counting_report,path_folder_counting_report,path_end_folder_counting_report)
     except NameError:
-        messagebox.showerror('Эльпида Школьная отчетность',
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите файл с параметрами , папку с отчетами и папку куда будет генерироваться результат')
     except SameFolder:
-        messagebox.showerror('Эльпида Школьная отчетность',
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
                              'Выберите разные папки в качестве исходной и конечной')
 
 
