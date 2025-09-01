@@ -215,8 +215,14 @@ def generate_docs(dct_descr:dict,data_df:pd.DataFrame,source_folder:str,destinat
     for source_folder, dest_folder in dct_path.items():
         for file in os.listdir(source_folder):
             if file.endswith('.docx') and not file.startswith('~$'):  # получаем только файлы docx и не временные
-                name_template = source_folder.split('/')[-1] # получаем название шаблона
+                name_template = file.split('.docx')[0]
+                # очищаем от лишнего в названиях шаблонов
+                name_template = re.sub('Шаблон ', '', name_template)
+                name_template = re.sub('общий', '', name_template)
+                name_template = re.sub('раздельный', '', name_template)
+
                 name_template = re.sub(r'[\r\b\n\t<>:"?*|\\/]', '_', name_template)
+
                 # определяем тип создаваемого документа
                 if 'раздельный' in file.lower():
                     used_name_file = set()  # множество для уже использованных имен файлов
