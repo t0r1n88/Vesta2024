@@ -220,7 +220,7 @@ def prepare_entry_str(raw_str:str,pattern:str,repl_str:str,sep_lst:str)->list:
     lst_number_column_folder_structure = list(map(lambda x:int(x)-1,lst_number_column_folder_structure))
     return lst_number_column_folder_structure
 
-def save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int,mode_pdf:str,name_os):
+def save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int,mode_pdf:str,name_os,name_type:str):
     """
     Функция для сохранения результатов
     :param finish_path: путь к папке сохранения
@@ -229,6 +229,7 @@ def save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int,mode
     :param idx: счетчик
     :param mode_pdf: чекбокс сохранения PDF
     :param name_os: операционная система
+    :param name_type: тип файла
     :return:
     """
     if os.path.exists(f'{finish_path}/{name_file}.docx'):
@@ -237,7 +238,7 @@ def save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int,mode
             if name_os == 'Windows':
                 if not os.path.exists(f'{finish_path}/PDF'):
                     os.makedirs(f'{finish_path}/PDF')
-                convert(f'{finish_path}/{name_file}_{idx}.docx', f'{finish_path}/PDF/{name_file}_{idx}.pdf',
+                convert(f'{finish_path}/{name_file}_{idx}.docx', f'{finish_path}/PDF/{name_type} {name_file}_{idx}.pdf',
                         keep_active=True)
             else:
                 raise NotImplementedError
@@ -247,18 +248,19 @@ def save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int,mode
             if name_os == 'Windows':
                 if not os.path.exists(f'{finish_path}/PDF'):
                     os.makedirs(f'{finish_path}/PDF')
-                convert(f'{finish_path}/{name_file}.docx', f'{finish_path}/PDF/{name_file}.pdf',
+                convert(f'{finish_path}/{name_file}.docx', f'{finish_path}/PDF/{name_type} {name_file}.pdf',
                         keep_active=True)
             else:
                 raise NotImplementedError
 
-def short_version_save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int):
+def short_version_save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int,name_type:str):
     """
     Функция для сохранения результатов
     :param finish_path: путь к папке сохранения
     :param name_file: название файла
     :param doc: объект DocxTemplate
     :param idx: счетчик
+    :param name_type: тип создаваемого пдф
     :return:
     """
     # проверка на случай если имя состоит только из пробелов
@@ -267,12 +269,16 @@ def short_version_save_result_file(finish_path:str,name_file:str,doc:DocxTemplat
         name_file = f'Не заполнено_{idx}'
     if os.path.exists(f'{finish_path}/{name_file}.docx'):
         doc.save(f'{finish_path}/{name_file}_{idx}.docx')
-        convert(f'{finish_path}/{name_file}_{idx}.docx', f'{finish_path}/{name_file}_{idx}.pdf',
+        if len(f'{finish_path}/{name_type} {name_file}_{idx}.pdf') > 255:
+            raise FileNotFoundError
+        convert(f'{finish_path}/{name_file}_{idx}.docx', f'{finish_path}/{name_type} {name_file}_{idx}.pdf',
                 keep_active=True)
         os.remove(f'{finish_path}/{name_file}_{idx}.docx')
     else:
         doc.save(f'{finish_path}/{name_file}.docx')
-        convert(f'{finish_path}/{name_file}.docx', f'{finish_path}/{name_file}.pdf',
+        if len(f'{finish_path}/{name_type} {name_file}.pdf') > 255:
+            raise FileNotFoundError
+        convert(f'{finish_path}/{name_file}.docx', f'{finish_path}/{name_type} {name_file}.pdf',
                 keep_active=True)
         os.remove(f'{finish_path}/{name_file}.docx')
 
@@ -479,7 +485,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                         raise OSError
                                     name_file = name_file[:threshold_name]  # ограничиваем название файла
                                     # Сохраняем файл
-                                    save_result_file(finish_path, name_file, doc, idx, mode_pdf,name_os)
+                                    save_result_file(finish_path, name_file, doc, idx, mode_pdf,name_os,name_type_file)
                             else:
                                 raise CheckBoxException
                         else:
@@ -570,7 +576,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                             raise OSError
                                         name_file = name_file[:threshold_name]  # ограничиваем название файла
                                         # Сохраняем файл
-                                        save_result_file(finish_path, name_file, doc, idx, mode_pdf, name_os)
+                                        save_result_file(finish_path, name_file, doc, idx, mode_pdf, name_os,name_type_file)
                                 else:
                                     raise CheckBoxException
                             else:
@@ -672,7 +678,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                                 raise OSError
                                             name_file = name_file[:threshold_name]  # ограничиваем название файла
                                             # Сохраняем файл
-                                            save_result_file(finish_path, name_file, doc, idx, mode_pdf, name_os)
+                                            save_result_file(finish_path, name_file, doc, idx, mode_pdf, name_os,name_type_file)
                                     else:
                                         raise CheckBoxException
                                 else:
@@ -730,7 +736,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                         # проверяем файл на наличие, если файл с таким названием уже существует то добавляем окончание
                         if name_file in used_name_file:
                             name_file = f'{name_file}_{idx}'
-                        short_version_save_result_file(path_to_end_folder_doc, name_file[:80], doc, idx)
+                        short_version_save_result_file(path_to_end_folder_doc, name_file[:80], doc, idx,name_type_file)
                         used_name_file.add(name_file)
                 else:
                     # Добавляем разрыв в шаблон чтобы объединенный файл был без смешивания
@@ -791,7 +797,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                     raise OSError
                                 name_file = name_file[:threshold_name]  # ограничиваем название файла
                                 # Сохраняем файл
-                                short_version_save_result_file(finish_path, name_file, doc, idx)
+                                short_version_save_result_file(finish_path, name_file, doc, idx,name_type_file)
                         else:
                             # Открываем шаблон
                             doc_page_break = Document(name_file_template_doc)
@@ -850,7 +856,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                         raise OSError
                                     name_file = name_file[:threshold_name]  # ограничиваем название файла
                                     # Сохраняем файл
-                                    short_version_save_result_file(finish_path, name_file, doc, idx)
+                                    short_version_save_result_file(finish_path, name_file, doc, idx,name_type_file)
                             else:
                                 # Открываем шаблон
                                 doc_page_break = Document(name_file_template_doc)
@@ -921,7 +927,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                             raise OSError
                                         name_file = name_file[:threshold_name]  # ограничиваем название файла
                                         # Сохраняем файл
-                                        short_version_save_result_file(finish_path, name_file, doc, idx)
+                                        short_version_save_result_file(finish_path, name_file, doc, idx,name_type_file)
                                 else:
                                     # Открываем шаблон
                                     doc_page_break = Document(name_file_template_doc)
@@ -952,8 +958,10 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
         logging.exception('AN ERROR HAS OCCURRED')
     except FileNotFoundError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
-                             f'Перенесите файлы, конечную папку с которой вы работете в корень диска. Проблема может быть\n '
-                             f'в слишком длинном пути к обрабатываемым файлам или конечной папке.')
+                             f'Перенесите файлы, конечную папку с которой вы работаете в корень диска. Проблема может быть\n '
+                             f'в слишком длинном пути к обрабатываемым файлам или конечной папке.\n'
+                             f'Проверьте количество символов в ячейках колонки по значениям которой создаются названия файлов.\n'
+                             f'Попробуйте сократить количество символов в колонке по значениям которой создаются названия файлов.')
     except exceptions.TemplateSyntaxError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Ошибка в оформлении вставляемых значений в шаблоне\n'
