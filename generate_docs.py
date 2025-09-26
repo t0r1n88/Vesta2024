@@ -253,14 +253,13 @@ def save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int,mode
             else:
                 raise NotImplementedError
 
-def short_version_save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int,name_type:str):
+def short_version_save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int):
     """
     Функция для сохранения результатов
     :param finish_path: путь к папке сохранения
     :param name_file: название файла
     :param doc: объект DocxTemplate
     :param idx: счетчик
-    :param name_type: тип создаваемого пдф
     :return:
     """
     # проверка на случай если имя состоит только из пробелов
@@ -269,16 +268,16 @@ def short_version_save_result_file(finish_path:str,name_file:str,doc:DocxTemplat
         name_file = f'Не заполнено_{idx}'
     if os.path.exists(f'{finish_path}/{name_file}.docx'):
         doc.save(f'{finish_path}/{name_file}_{idx}.docx')
-        if len(f'{finish_path}/{name_type} {name_file}_{idx}.pdf') > 255:
+        if len(f'{finish_path}/{name_file}_{idx}.pdf') > 255:
             raise FileNotFoundError
-        convert(f'{finish_path}/{name_file}_{idx}.docx', f'{finish_path}/{name_type} {name_file}_{idx}.pdf',
+        convert(f'{finish_path}/{name_file}_{idx}.docx', f'{finish_path}/{name_file}_{idx}.pdf',
                 keep_active=True)
         os.remove(f'{finish_path}/{name_file}_{idx}.docx')
     else:
         doc.save(f'{finish_path}/{name_file}.docx')
-        if len(f'{finish_path}/{name_type} {name_file}.pdf') > 255:
+        if len(f'{finish_path}/{name_file}.pdf') > 255:
             raise FileNotFoundError
-        convert(f'{finish_path}/{name_file}.docx', f'{finish_path}/{name_type} {name_file}.pdf',
+        convert(f'{finish_path}/{name_file}.docx', f'{finish_path}/{name_file}.pdf',
                 keep_active=True)
         os.remove(f'{finish_path}/{name_file}.docx')
 
@@ -736,7 +735,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                         # проверяем файл на наличие, если файл с таким названием уже существует то добавляем окончание
                         if name_file in used_name_file:
                             name_file = f'{name_file}_{idx}'
-                        short_version_save_result_file(path_to_end_folder_doc, name_file[:80], doc, idx,name_type_file)
+                        short_version_save_result_file(path_to_end_folder_doc, name_file[:80], doc, idx)
                         used_name_file.add(name_file)
                 else:
                     # Добавляем разрыв в шаблон чтобы объединенный файл был без смешивания
@@ -797,7 +796,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                     raise OSError
                                 name_file = name_file[:threshold_name]  # ограничиваем название файла
                                 # Сохраняем файл
-                                short_version_save_result_file(finish_path, name_file, doc, idx,name_type_file)
+                                short_version_save_result_file(finish_path, name_file, doc, idx)
                         else:
                             # Открываем шаблон
                             doc_page_break = Document(name_file_template_doc)
@@ -856,7 +855,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                         raise OSError
                                     name_file = name_file[:threshold_name]  # ограничиваем название файла
                                     # Сохраняем файл
-                                    short_version_save_result_file(finish_path, name_file, doc, idx,name_type_file)
+                                    short_version_save_result_file(finish_path, name_file, doc, idx)
                             else:
                                 # Открываем шаблон
                                 doc_page_break = Document(name_file_template_doc)
@@ -927,7 +926,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                                             raise OSError
                                         name_file = name_file[:threshold_name]  # ограничиваем название файла
                                         # Сохраняем файл
-                                        short_version_save_result_file(finish_path, name_file, doc, idx,name_type_file)
+                                        short_version_save_result_file(finish_path, name_file, doc, idx)
                                 else:
                                     # Открываем шаблон
                                     doc_page_break = Document(name_file_template_doc)
