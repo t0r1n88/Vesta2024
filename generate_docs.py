@@ -281,6 +281,42 @@ def short_version_save_result_file(finish_path:str,name_file:str,doc:DocxTemplat
                 keep_active=True)
         os.remove(f'{finish_path}/{name_file}.docx')
 
+
+def second_short_version_save_result_file(finish_path:str,name_file:str,doc:DocxTemplate,idx:int,name_type:str):
+    """
+    Функция для сохранения результатов в pdf для варианта без раскладывания по папкам
+    :param finish_path: путь к папке сохранения
+    :param name_file: название файла
+    :param doc: объект DocxTemplate
+    :param idx: счетчик
+    :param name_type: тип создаваемого документа
+    :return:
+    """
+    # проверка на случай если имя состоит только из пробелов
+    check_space = re.sub(r'\s','',name_file)
+    if len(check_space) == 0:
+        name_file = f'Не заполнено_{idx}'
+    if os.path.exists(f'{finish_path}/{name_file}.docx'):
+        doc.save(f'{finish_path}/{name_file}_{idx}.docx')
+        if len(f'{finish_path}/{name_type} {name_file}_{idx}.pdf') > 255:
+            raise FileNotFoundError
+        convert(f'{finish_path}/{name_file}_{idx}.docx', f'{finish_path}/{name_type} {name_file}_{idx}.pdf',
+                keep_active=True)
+        os.remove(f'{finish_path}/{name_file}_{idx}.docx')
+    else:
+        doc.save(f'{finish_path}/{name_file}.docx')
+        if len(f'{finish_path}/{name_type} {name_file}.pdf') > 255:
+            raise FileNotFoundError
+        convert(f'{finish_path}/{name_file}.docx', f'{finish_path}/{name_type} {name_file}.pdf',
+                keep_active=True)
+        os.remove(f'{finish_path}/{name_file}.docx')
+
+
+
+
+
+
+
 def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_column, name_type_file,path_to_end_folder_doc, name_value_column, mode_pdf,
                                 mode_combine, mode_group,mode_structure_folder,number_structure_folder,mode_full):
     """
@@ -735,7 +771,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
                         # проверяем файл на наличие, если файл с таким названием уже существует то добавляем окончание
                         if name_file in used_name_file:
                             name_file = f'{name_file}_{idx}'
-                        short_version_save_result_file(path_to_end_folder_doc, name_file[:80], doc, idx)
+                        second_short_version_save_result_file(path_to_end_folder_doc, name_file[:80], doc, idx,name_type_file)
                         used_name_file.add(name_file)
                 else:
                     # Добавляем разрыв в шаблон чтобы объединенный файл был без смешивания
