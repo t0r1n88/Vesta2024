@@ -240,21 +240,20 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
 
         # заполняем сводные таблицы
         # Количество совершенолетних
-        df_svod_by_matur = df.groupby(['Совершеннолетие']).agg({name_column: 'count'})
+        df_svod_by_matur = df.groupby(['Совершеннолетие']).agg({'Совершеннолетие': 'count'})
         df_svod_by_matur.columns = ['Количество']
         df_svod_by_matur.sort_values(by='Количество',inplace=True,ascending=False)
         for r in dataframe_to_rows(df_svod_by_matur, index=True, header=True):
             wb['Свод сов_несов'].append(r)
         # Сводная по возрастам
-
-        df_svod_by_age = df.groupby(['Текущий возраст']).agg({name_column: 'count'})
+        df_svod_by_age = df.groupby(['Текущий возраст']).agg({'Текущий возраст': 'count'})
         df_svod_by_age.columns = ['Количество']
 
         for r in dataframe_to_rows(df_svod_by_age, index=True, header=True):
             wb['Свод по возрастам'].append(r)
 
         # Сводная по месяцам
-        df_svod_by_month = df.groupby(['Название месяца рождения']).agg({name_column: 'count'})
+        df_svod_by_month = df.groupby(['Название месяца рождения']).agg({'Название месяца рождения': 'count'})
         df_svod_by_month.columns = ['Количество']
 
         # Сортируем индекс чтобы месяцы шли в хоронологическом порядке
@@ -270,35 +269,35 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
             wb['Свод по месяцам'].append(r)
 
         # Сводная по годам
-        df_svod_by_year = df.groupby(['Год рождения']).agg({name_column: 'count'})
+        df_svod_by_year = df.groupby(['Год рождения']).agg({'Год рождения': 'count'})
         df_svod_by_year.columns = ['Количество']
 
         for r in dataframe_to_rows(df_svod_by_year, index=True, header=True):
             wb['Свод по годам'].append(r)
 
         # Сводная по 1-ПК
-        df_svod_by_1PK = df.groupby(['1-ПК Категория']).agg({name_column: 'count'})
+        df_svod_by_1PK = df.groupby(['1-ПК Категория']).agg({'1-ПК Категория': 'count'})
         df_svod_by_1PK.columns = ['Количество']
 
         for r in dataframe_to_rows(df_svod_by_1PK, index=True, header=True):
             wb['Свод по 1-ПК'].append(r)
 
         # Сводная по 1-ПО
-        df_svod_by_1PO = df.groupby(['1-ПО Категория']).agg({name_column: 'count'})
+        df_svod_by_1PO = df.groupby(['1-ПО Категория']).agg({'1-ПО Категория': 'count'})
         df_svod_by_1PO.columns = ['Количество']
 
         for r in dataframe_to_rows(df_svod_by_1PO, index=True, header=True):
             wb['Свод по 1-ПО'].append(r)
 
         # Сводная по СПО-1
-        df_svod_by_SPO1 = df.groupby(['СПО-1 Категория']).agg({name_column: 'count'})
+        df_svod_by_SPO1 = df.groupby(['СПО-1 Категория']).agg({'СПО-1 Категория': 'count'})
         df_svod_by_SPO1.columns = ['Количество']
 
         for r in dataframe_to_rows(df_svod_by_SPO1, index=True, header=True):
             wb['Свод по СПО-1'].append(r)
 
         # Сводная по Росстату
-        df_svod_by_Ros = df.groupby(['Росстат Категория']).agg({name_column: 'count'})
+        df_svod_by_Ros = df.groupby(['Росстат Категория']).agg({'Росстат Категория': 'count'})
         df_svod_by_Ros.columns = ['Количество']
 
 
