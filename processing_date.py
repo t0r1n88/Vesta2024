@@ -29,6 +29,12 @@ logging.basicConfig(
 )
 
 
+class NotDateValue(Exception):
+    """
+    Функция для обработки случая когда не заполнено поле для даты
+    """
+    pass
+
 def extract_number_month(cell):
     """
     Функция для извлечения номера месяца
@@ -62,6 +68,8 @@ def calculate_age(born, raw_selected_date):
     """
 
     try:
+        if raw_selected_date == '':
+            raise NotDateValue
         selected_date = pd.to_datetime(raw_selected_date, dayfirst=True)
         return selected_date.year - born.year - ((selected_date.month, selected_date.day) < (born.month, born.day))
 
@@ -70,6 +78,7 @@ def calculate_age(born, raw_selected_date):
                              f'Введена некорректная дата относительно которой нужно провести обработку\nПример корректной даты 01.09.2022')
         logging.exception('AN ERROR HAS OCCURRED')
         quit()
+
 
 
 def create_doc_convert_date(cell):
@@ -344,8 +353,11 @@ def proccessing_date(raw_selected_date, name_column, name_file_data_date, path_t
         logging.exception('AN ERROR HAS OCCURRED')
     except FileNotFoundError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
-                             f'Перенесите файлы, конечную папку с которой вы работете в корень диска. Проблема может быть\n '
+                             f'Перенесите файлы, конечную папку с которой вы работаете в корень диска. Проблема может быть\n '
                              f'в слишком длинном пути к обрабатываемым файлам или конечной папке.')
+    except NotDateValue:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'Введите дату на которую нужно подсчитать текущий возраст.\nПример корректной даты 01.09.2022')
 
     except:
         logging.exception('AN ERROR HAS OCCURRED')
