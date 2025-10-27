@@ -44,6 +44,12 @@ class WrongNumberColumn(Exception):
     """
     pass
 
+class SameColumns(Exception):
+    """
+    Исключения для случаев когда совпадают сводные и целевые колонки
+    """
+    pass
+
 
 
 def count_uniq(value):
@@ -118,6 +124,11 @@ def generate_svod_for_columns(file_data:str,sheet_name:str,end_folder:str,str_co
             lst_target_number_column = list(map(int, _target_col))
         else:
             raise NotNumberStr
+
+        # Проверяем на совпадающие колонки
+        same_cols = set(_lst_cols).intersection(set(_target_col))
+        if len(same_cols) != 0:
+            raise SameColumns
 
         # Проверка на существование колонки
         for value in lst_number_cols:
@@ -257,6 +268,12 @@ def generate_svod_for_columns(file_data:str,sheet_name:str,end_folder:str,str_co
                              f'Введите порядковые номера колонок в виде цифр разделенных запятыми !')
         logging.exception('AN ERROR HAS OCCURRED')
 
+    except SameColumns:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'Указаны совпадающие номера колонок в списке колонок по которым будет вестись группировка и в списке колонок по которым будет вестись подсчет - {same_cols}\n'
+                             f'Порядковые номера колонок должны быть разными.')
+        logging.exception('AN ERROR HAS OCCURRED')
+
     except WrongNumberColumn:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'В таблице нет колонки с таким порядковым номером: {error_value} \n'
@@ -282,11 +299,11 @@ if __name__ =='__main__':
     file_data_main = 'data/Сводная таблица/Содействие занятости 2023.xlsx'
     # file_data_main = 'data/Сводная таблица/Билет в будущее сводный отчет по ученикам осень 2023.xlsx'
     # sheet_name_main = 'Заявки'
-    sheet_name_main = 'Заявки'
+    sheet_name_main = '1'
     end_folder_main = 'data/Сводная таблица/result'
-    str_column_main = '12,7'  # колонки для сводной таблицы
+    str_column_main = '6,13'  # колонки для сводной таблицы
     # str_column_main = 'fgg'
-    str_target_column_main = '3'  # целевая колонка
+    str_target_column_main = '17'  # целевая колонка
 
     generate_svod_for_columns(file_data_main,sheet_name_main,end_folder_main,str_column_main,str_target_column_main)
 

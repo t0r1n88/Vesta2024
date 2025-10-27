@@ -66,20 +66,32 @@ def convert_to_date_prep_list(value,current_date):
         else:
             # Пытаемся обработать варианты с пробелом между блоками
             value = str(value)
-            lst_dig = re.findall(r'\d',value)
-            if len(lst_dig) != 8:
-                return f'Ошибка: {value}, проверьте  правильность даты'
-            # делаем строку
-            temp_date = f'{lst_dig[0]}{lst_dig[1]}.{lst_dig[2]}{lst_dig[3]}.{lst_dig[4]}{lst_dig[5]}{lst_dig[6]}{lst_dig[7]}'
-            try:
-                temp_date = datetime.strptime(temp_date, '%d.%m.%Y')
-                if temp_date.date() > current_date:
-                    string_date = datetime.strftime(temp_date, '%d.%m.%Y')
-                    return f'Ошибка: {string_date}, превышает текущую дату. Проверьте значение или системное время на компьютере'
-                return temp_date
-            except ValueError:
-                # для случаев вида 45.09.2007
-                return f'Ошибка: {value}, проверьте  правильность даты'
+            result_short_yandex = re.search(r'^\d{4}-\d{2}-\d{2}$',value) # ищем сокращенный вариант яндекса
+            if result_short_yandex:
+                try:
+                    temp_date_yandex = datetime.strptime(result_short_yandex.group(0), '%Y-%m-%d')
+                    if temp_date_yandex.date() > current_date:
+                        string_date = datetime.strftime(temp_date_yandex, '%d.%m.%Y')
+                        return f'Ошибка: {string_date}, превышает текущую дату. Проверьте значение или системное время на компьютере'
+                    return temp_date_yandex
+                except ValueError:
+                    # для случаев вида 45.09.2007
+                    return f'Ошибка: {value}, проверьте  правильность даты'
+            else:
+                lst_dig = re.findall(r'\d',value)
+                if len(lst_dig) != 8:
+                    return f'Ошибка: {value}, проверьте  правильность даты'
+                # делаем строку
+                temp_date = f'{lst_dig[0]}{lst_dig[1]}.{lst_dig[2]}{lst_dig[3]}.{lst_dig[4]}{lst_dig[5]}{lst_dig[6]}{lst_dig[7]}'
+                try:
+                    temp_date = datetime.strptime(temp_date, '%d.%m.%Y')
+                    if temp_date.date() > current_date:
+                        string_date = datetime.strftime(temp_date, '%d.%m.%Y')
+                        return f'Ошибка: {string_date}, превышает текущую дату. Проверьте значение или системное время на компьютере'
+                    return temp_date
+                except ValueError:
+                    # для случаев вида 45.09.2007
+                    return f'Ошибка: {value}, проверьте  правильность даты'
 
     except:
         return f'Ошибка: {value}, проверьте  правильность даты'
@@ -631,6 +643,7 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
 if __name__ == '__main__':
     # file_data_main = 'data/Обработка списка/Список студентов военкомат.xlsx'
     file_data_main = 'data/Обработка списка/Список студентов военкомат.xlsx'
+    file_data_main = 'data/Обработка списка/ИТОГОВЫЙ список зарегистрировавшихся на курс.xlsx'
     # file_data_main = 'data/Обработка списка/Билет в будущее сводный отчет по ученикам 2021-2023.xlsx'
     path_end_main = 'data'
     checkbox_main_dupl = 'Yes'
