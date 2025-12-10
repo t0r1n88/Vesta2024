@@ -7,6 +7,8 @@ import time
 import gc
 import pandas as pd
 import openpyxl
+from openpyxl.utils.dataframe import dataframe_to_rows
+
 import numpy as np
 import xlsxwriter
 from datetime import datetime
@@ -33,6 +35,21 @@ class ExceedingQuantity(Exception):
     Исключение для случаев когда числа уникальных значений больше 255
     """
     pass
+
+class NotNumberColumn(Exception):
+    """
+    Исключение для обработки варианта когда в таблице нет колонки с таким порядковым номером
+    """
+    pass
+
+class NoMoreNumberColumn(Exception):
+    """
+    Исключение для обработки варианта если в строке с указанием колонок по которым нужно проверить дубликаты нет цифр
+
+    """
+    pass
+
+
 
 def convert_to_date_prep_list(value,current_date):
     """
@@ -437,13 +454,38 @@ def find_mixing_alphabets(cell):
     else:
         return cell
 
+def prepare_entry_str(raw_str:str,pattern:str,repl_str:str,sep_lst:str)->list:
+    """
+    Функция для очистки строки от лишних символов и уменьшения на единицу (для нумерации с нуля)
+    :param raw_str: обрабатываемая строка
+    :param pattern: паттерн для замены символов
+    :param repl_str: строка на которую нужно заменять символы
+    :param sep_lst: разделитель по которому будет делиться список
+    :return: список
+    """
+    raw_str = str(raw_str).replace('.',',')
+    number_column_folder_structure = re.sub(pattern,repl_str,raw_str) # убираем из строки все лишние символы
+    lst_number_column_folder_structure = number_column_folder_structure.split(sep_lst) # создаем список по запятой
+    # отбрасываем возможные лишние элементы из за лишних запятых
+    lst_number_column_folder_structure = [value for value in lst_number_column_folder_structure if value]
+    # заменяем 0 на единицу
+    lst_number_column_folder_structure = ['1' if x == '0' else x for x in lst_number_column_folder_structure]
+    # Превращаем в числа и отнимаем 1 чтобы соответствовать индексам питона
+    lst_number_column_folder_structure = list(map(lambda x:int(x)-1,lst_number_column_folder_structure))
+    return lst_number_column_folder_structure
 
-def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mix_alphabets:str):
+
+
+
+
+def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mix_alphabets:str,checkbox_many_dupl:str,number_dupl_columns):
     """
     file_data : путь к файлу который нужно преобразовать
     path_end_folder :  путь к конечной папке
     checkbox_dupl: Проверять на дубликаты или нет. Yes or No
     checkbox_mix_alphabets: Проверять на смешение русских и английских букв или нет. Yes or No
+    checkbox_many_dupl: Проверять на дубликаты несколько колонок или нет. Yes or No
+    number_dupl_columns: Порядковые номера колонок по которым нужно проверить дубликаты
     """
     try:
         try:
@@ -452,6 +494,19 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
             messagebox.showerror('Веста Обработка таблиц и создание документов',
                                  f'Не удалось обработать файл. Возможно файл поврежден')
         df.columns = list(map(str,list(df.columns))) # делаем названия колонок строкововыми
+        # проверяем корректность введенных номеров колонок
+        if checkbox_many_dupl == 'Yes':
+            # очищаем строку от лишних символов и превращаем в список номеров колонок
+            lst_number_dupl_cols = prepare_entry_str(number_dupl_columns, r'[^\d,]', '', ',')
+            if len(lst_number_dupl_cols) == 0:
+                raise NoMoreNumberColumn
+            else:
+                # проверяем чтобы номер колонки не превышал количество колонок в датафрейме
+                for number_column in lst_number_dupl_cols:
+                    if number_column > df.shape[1]-1:
+                        raise NotNumberColumn
+
+
         # очищаем все строковые значения от пробелов в начале и конце
         df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
         # заменяем пробельные символы на пробел, чтобы убрать лишние пробелы
@@ -577,6 +632,63 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
                         wb_name_sheet.write(row + 1, col, cell_value)
 
             wb_mix.close()
+
+        # Создаем файл с количеством по каждой колонке
+        wb_stat = openpyxl.Workbook()
+        main_df = df.copy() # делаем копию
+        main_df['Для подсчета'] = 1
+        # Создаем листы
+        for idx, name_column in enumerate(main_df.columns,1):
+            # Делаем короткое название не более 30 символов
+            if name_column == 'Для подсчета':
+                continue
+            wb_stat.create_sheet(title=str(idx), index=idx)
+
+        for idx, name_column in enumerate(main_df.columns,1):
+            group_df = main_df.groupby([name_column]).agg({'Для подсчета': 'sum'})
+            group_df.columns = ['Количество']
+
+            # Сортируем по убыванию
+            group_df.sort_values(by=['Количество'], inplace=True, ascending=False)
+            group_df.loc['Итого'] = group_df['Количество'].sum()
+            if name_column == 'Для подсчета':
+                continue
+
+            for r in dataframe_to_rows(group_df, index=True, header=True):
+                if len(r) != 1:
+                    wb_stat[str(idx)].append(r)
+            wb_stat[str(idx)].column_dimensions['A'].width = 50
+
+        # Удаляем листы
+        del_sheet(wb_stat, ['Sheet', 'Для подсчета'])
+        wb_stat.save(f'{path_end_folder}/Количество {current_time}.xlsx')
+
+        # Если поставлен чекбокс то проверяем несколько колонок на дубликаты
+        if checkbox_many_dupl == 'Yes':
+            main_dupl_df = df.copy()  # создаем базовый датафрейм для дубликатов по многим колонкам
+            print(lst_number_dupl_cols)
+            for i in range(len(lst_number_dupl_cols)):
+                if i == 0:
+                    temp_many_df = main_dupl_df.iloc[:,lst_number_dupl_cols]
+                    dupl_many_df = temp_many_df[temp_many_df.duplicated(keep=False)]
+                    # Сортируем по первой колонке
+                    dupl_many_df = dupl_many_df.sort_values(by=dupl_many_df.columns[lst_number_dupl_cols[0]])
+                    dupl_many_df.insert(0, '№ строки дубликата', list(map(lambda x: x + 2, list(dupl_many_df.index))))
+                    if len(dupl_many_df) != 0:
+                        dupl_many_df.loc['Граница'] = ''
+                        main_dupl_df = pd.concat([main_dupl_df, dupl_many_df])
+
+                else:
+                    temp_many_df = main_dupl_df.iloc[:,lst_number_dupl_cols[:-i]]
+                    dupl_many_df = temp_many_df[temp_many_df.duplicated(keep=False)]
+
+
+        raise ZeroDivisionError
+
+
+
+
+
         # сохраняем основной файл
 
         dct_df = {'Лист1': df}
@@ -643,13 +755,14 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
 if __name__ == '__main__':
     # file_data_main = 'data/Обработка списка/Список студентов военкомат.xlsx'
     file_data_main = 'data/Обработка списка/Список студентов военкомат.xlsx'
-    file_data_main = 'data/Обработка списка/ИТОГОВЫЙ список зарегистрировавшихся на курс.xlsx'
     # file_data_main = 'data/Обработка списка/Билет в будущее сводный отчет по ученикам 2021-2023.xlsx'
-    path_end_main = 'data'
-    checkbox_main_dupl = 'Yes'
-    checkbox_main_mix_alphabets = 'Yes'
+    path_end_main = 'data/result'
+    checkbox_main_dupl = 'No'
+    checkbox_main_mix_alphabets = 'No'
+    checkbox_main_many_dupl_cols = 'Yes'
+    main_lst_dupl_columns = '1,2,3'
     start_time = time.time()
-    prepare_list(file_data_main,path_end_main,checkbox_main_dupl,checkbox_main_mix_alphabets)
+    prepare_list(file_data_main,path_end_main,checkbox_main_dupl,checkbox_main_mix_alphabets,checkbox_main_many_dupl_cols,main_lst_dupl_columns)
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Время выполнения: {execution_time} секунд")
