@@ -208,18 +208,19 @@ def find_diffrence(first_sheet, second_sheet, first_df, second_df,path_to_end_fo
                              f'Перенесите файлы, конечную папку с которой вы работете в корень диска. Проблема может быть\n '
                              f'в слишком длинном пути к обрабатываемым файлам или конечной папке.')
 
-    except:
-        logging.exception('AN ERROR HAS OCCURRED')
-        messagebox.showerror('Веста Обработка таблиц и создание документов',
-                             'Возникла ошибка!!! Подробности ошибки в файле error.log Возможно обрабатываемые файлы повреждены.')
+    # except:
+    #     logging.exception('AN ERROR HAS OCCURRED')
+    #     messagebox.showerror('Веста Обработка таблиц и создание документов',
+    #                          'Возникла ошибка!!! Подробности ошибки в файле error.log Возможно обрабатываемые файлы повреждены.')
     else:
         messagebox.showinfo('Веста Обработка таблиц и создание документов', 'Таблицы успешно обработаны')
 
 if __name__ == '__main__':
     first_sheet_main = 'Основное'
-    second_sheet_main = 'Основноgfе'
+    second_sheet_main = 'Основное'
     data_first_diffrence_main = 'data\Разница между 2 таблицами\Отчет 2021.xlsx'
     data_second_diffrence_main = 'data\Разница между 2 таблицами\Отчет 2022.xlsx'
+    data_second_diffrence_main = 'data\Разница между 2 таблицами\Тест.xlsx'
     path_to_end_folder_diffrence_main = 'data'
 
     find_diffrence(first_sheet_main, second_sheet_main, data_first_diffrence_main, data_second_diffrence_main, path_to_end_folder_diffrence_main)

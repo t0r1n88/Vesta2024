@@ -31,6 +31,8 @@ def write_df_to_excel(dct_df:dict,write_index:bool)->openpyxl.Workbook:
     for name_sheet,df in dct_df.items():
         wb.create_sheet(title=name_sheet,index=count_index) # создаем лист
         # записываем данные в лист
+        if len(df) == 0:
+            continue
         for row in dataframe_to_rows(df,index=write_index,header=True):
             wb[name_sheet].append(row)
         # ширина по содержимому

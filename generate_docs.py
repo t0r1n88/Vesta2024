@@ -347,6 +347,7 @@ def generate_docs_from_template(name_file_template_doc, name_file_data_doc,name_
         # Добавил параметр dtype =str чтобы данные не преобразовались а использовались так как в таблице
         try:
             df = pd.read_excel(name_file_data_doc, dtype=str)
+            df.dropna(how='all',inplace=True) # удаляем пустые строки
         except:
             messagebox.showerror('Веста Обработка таблиц и создание документов',
                                  f'Не удалось обработать файл xlsx с данными на основе которых будут создаваться документы. Возможно файл поврежден')
@@ -1066,6 +1067,7 @@ if __name__ == '__main__':
     name_file_template_doc_main = 'data/Карточка гражданина Форма № 10.docx'
     name_file_data_doc_main = 'data/Создание документов/Таблица для заполнения согласия.xlsx'
     name_file_data_doc_main = 'data/участники конкурса резюме.xlsx'
+    name_file_data_doc_main = 'data/БАЗА.xlsx'
     path_to_end_folder_doc_main = 'data/result'
     mode_combine_main = 'No'
     mode_group_main = 'No'
