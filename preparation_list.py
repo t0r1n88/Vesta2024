@@ -475,6 +475,20 @@ def prepare_entry_str(raw_str:str,pattern:str,repl_str:str,sep_lst:str)->list:
     return lst_number_column_folder_structure
 
 
+def convert_columns_to_str(df, number_columns):
+    """
+    Функция для конвертации указанных столбцов в строковый тип и очистки от пробельных символов в начале и конце
+    """
+
+    for column in number_columns:  # Перебираем список нужных колонок
+        try:
+            df.iloc[:, column] = df.iloc[:, column].astype(str)
+            # Очищаем колонку от пробельных символов с начала и конца
+            df.iloc[:, column] = df.iloc[:, column].apply(lambda x: x.strip())
+        except IndexError:
+            messagebox.showerror('Веста Обработка таблиц и создание документов',
+                                 'Проверьте порядковые номера колонок которые вы хотите обработать.')
+
 
 
 
@@ -663,27 +677,62 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
         del_sheet(wb_stat, ['Sheet', 'Для подсчета'])
         wb_stat.save(f'{path_end_folder}/Количество {current_time}.xlsx')
 
-        # Если поставлен чекбокс то проверяем несколько колонок на дубликаты
+        # Если поставлен чекбокс, то проверяем несколько колонок на дубликаты
         if checkbox_many_dupl == 'Yes':
-            main_dupl_df = df.copy()  # создаем базовый датафрейм для дубликатов по многим колонкам
-            print(lst_number_dupl_cols)
+            lst_dupl_name_columns = [df.columns[idx_column] for idx_column in lst_number_dupl_cols ]
+            dct_many_dupl_df = dict() # словарь для хранения дубликатов по нескольким колонкам
             for i in range(len(lst_number_dupl_cols)):
+                lst_cols_for_many_dupl_df = ['№ строки дубликата','ID_дубликата']
+                lst_cols_for_many_dupl_df.extend(list(df.columns))
+                base_main_dupl_df = df.copy()  # создаем базовый датафрейм для дубликатов по многим колонкам
+                main_dupl_df = pd.DataFrame(columns=lst_cols_for_many_dupl_df)
                 if i == 0:
-                    temp_many_df = main_dupl_df.iloc[:,lst_number_dupl_cols]
-                    dupl_many_df = temp_many_df[temp_many_df.duplicated(keep=False)]
-                    # Сортируем по первой колонке
-                    dupl_many_df = dupl_many_df.sort_values(by=dupl_many_df.columns[lst_number_dupl_cols[0]])
+                    # temp_many_df = base_main_dupl_df.iloc[:,lst_number_dupl_cols]
+                    dupl_many_df = base_main_dupl_df[base_main_dupl_df[lst_dupl_name_columns].duplicated(keep=False)]
                     dupl_many_df.insert(0, '№ строки дубликата', list(map(lambda x: x + 2, list(dupl_many_df.index))))
                     if len(dupl_many_df) != 0:
-                        dupl_many_df.loc['Граница'] = ''
-                        main_dupl_df = pd.concat([main_dupl_df, dupl_many_df])
+                        # Конвертируем нужные нам колонки в str
+                        convert_columns_to_str(dupl_many_df, lst_number_dupl_cols)
+                        # создаем датафреймы из колонок выбранных для объединения, такой способо связан с тем, что
+                        # при использовании sum числа в строковом виде превращаются в числа
+                        # Создаем в каждом датафрейме колонку с айди путем склеивания всех нужных колонок в одну строку
+                        dupl_many_df.insert(1,'ID_дубликата',dupl_many_df[lst_dupl_name_columns].apply(lambda x: '_'.join(x), axis=1))
+                        # dupl_many_df['ID_дубликата'] = dupl_many_df[lst_dupl_name_columns].apply(lambda x: ''.join(x), axis=1)
+                        lst_id_dupl = dupl_many_df['ID_дубликата'].unique() # уникальные дубликаты
+                        for id_dupl in lst_id_dupl:
+                            temp_dupl_df = dupl_many_df[dupl_many_df['ID_дубликата'] == id_dupl]
+                            temp_dupl_df = temp_dupl_df.sort_values(by='ID_дубликата')
+                            temp_dupl_df.loc['Граница'] = ''
+                            main_dupl_df = pd.concat([main_dupl_df, temp_dupl_df])
+
+                        dct_many_dupl_df[f'{len(lst_number_dupl_cols)}'] = main_dupl_df
+
 
                 else:
-                    temp_many_df = main_dupl_df.iloc[:,lst_number_dupl_cols[:-i]]
-                    dupl_many_df = temp_many_df[temp_many_df.duplicated(keep=False)]
+                    dupl_many_df = base_main_dupl_df[base_main_dupl_df[lst_dupl_name_columns[:-i]].duplicated(keep=False)]
+                    dupl_many_df.insert(0, '№ строки дубликата', list(map(lambda x: x + 2, list(dupl_many_df.index))))
+                    if len(dupl_many_df) != 0:
+                        # Конвертируем нужные нам колонки в str
+                        convert_columns_to_str(dupl_many_df, lst_number_dupl_cols[:-i])
+                        # создаем датафреймы из колонок выбранных для объединения, такой способо связан с тем, что
+                        # при использовании sum числа в строковом виде превращаются в числа
+                        # Создаем в каждом датафрейме колонку с айди путем склеивания всех нужных колонок в одну строку
+                        dupl_many_df.insert(1, 'ID_дубликата',dupl_many_df[lst_dupl_name_columns[:-i]].apply(lambda x: '_'.join(x), axis=1))
+
+                        lst_id_dupl = dupl_many_df['ID_дубликата'].unique() # уникальные дубликаты
+
+                        for id_dupl in lst_id_dupl:
+                            temp_dupl_df = dupl_many_df[dupl_many_df['ID_дубликата'] == id_dupl]
+                            temp_dupl_df = temp_dupl_df.sort_values(by='ID_дубликата')
+                            temp_dupl_df.loc['Граница'] = ''
+                            main_dupl_df = pd.concat([main_dupl_df, temp_dupl_df])
+
+                        dct_many_dupl_df[f'{len(lst_number_dupl_cols[:-i])}'] = main_dupl_df
 
 
-        raise ZeroDivisionError
+            file_error_wb = write_df_to_excel_error_prep_list(dct_many_dupl_df, write_index=False)
+            file_error_wb = del_sheet(file_error_wb, ['Sheet', 'Sheet1', 'Для подсчета'])
+            file_error_wb.save(f'{path_end_folder}/Дубли по нескольким колонкам {current_time}.xlsx')
 
 
 
@@ -739,10 +788,10 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
                              f'Выберите файлы с данными и папку куда будет генерироваться файл')
         logging.exception('AN ERROR HAS OCCURRED')
 
-    except ValueError as e:
-        messagebox.showerror('Веста Обработка таблиц и создание документов',
-                             f'Ошибка при обработке значения {e.args}')
-        logging.exception('AN ERROR HAS OCCURRED')
+    # except ValueError as e:
+    #     messagebox.showerror('Веста Обработка таблиц и создание документов',
+    #                          f'Ошибка при обработке значения {e.args}')
+    #     logging.exception('AN ERROR HAS OCCURRED')
 
     except FileNotFoundError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
@@ -755,12 +804,12 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
 if __name__ == '__main__':
     # file_data_main = 'data/Обработка списка/Список студентов военкомат.xlsx'
     file_data_main = 'data/Обработка списка/Список студентов военкомат.xlsx'
-    # file_data_main = 'data/Обработка списка/Билет в будущее сводный отчет по ученикам 2021-2023.xlsx'
+    file_data_main = 'data/Обработка списка/выверка.xlsx'
     path_end_main = 'data/result'
-    checkbox_main_dupl = 'No'
-    checkbox_main_mix_alphabets = 'No'
+    checkbox_main_dupl = 'Yes'
+    checkbox_main_mix_alphabets = 'Yes'
     checkbox_main_many_dupl_cols = 'Yes'
-    main_lst_dupl_columns = '1,2,3'
+    main_lst_dupl_columns = '17,9,11,12,14'
     start_time = time.time()
     prepare_list(file_data_main,path_end_main,checkbox_main_dupl,checkbox_main_mix_alphabets,checkbox_main_many_dupl_cols,main_lst_dupl_columns)
     end_time = time.time()
