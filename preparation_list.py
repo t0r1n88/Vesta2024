@@ -745,7 +745,10 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
         wb_main = write_df_highlighting_error_to_excel(dct_df, write_index)
         wb_main = del_sheet(wb_main,['Sheet', 'Sheet1', 'Для подсчета'])
 
-        name_file = file_data.split('.xlsx')[0]  # получаем путь без расширения
+        if file_data.endswith('.xlsx'):
+            name_file = file_data.split('.xlsx')[0]  # получаем путь без расширения
+        else:
+            name_file = file_data.split('.xlsm')[0]  # получаем путь без расширения
         name_file = name_file.split('/')[-1]
         wb_main.save(f'{path_end_folder}/Обработанный {name_file} {current_time}.xlsx')
 
