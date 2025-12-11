@@ -81,7 +81,7 @@ def select_file_data_doc():
     """
     global name_file_data_doc
     # Получаем путь к файлу
-    name_file_data_doc = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    name_file_data_doc = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_end_folder_doc():
@@ -113,7 +113,7 @@ def select_file_data_batch():
     """
     global name_file_data_batch
     # Получаем путь к файлу
-    name_file_data_batch = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    name_file_data_batch = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_end_folder_batch():
@@ -320,7 +320,7 @@ def select_file_data_date():
     """
     global name_file_data_date
     # Получаем путь к файлу
-    name_file_data_date = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    name_file_data_date = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'),('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_end_folder_date():
@@ -360,7 +360,7 @@ def select_file_data_groupby():
     """
     global name_file_data_groupby
     # Получаем путь к файлу
-    name_file_data_groupby = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    name_file_data_groupby = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_end_folder_groupby():
@@ -411,7 +411,7 @@ def select_first_comparison():
     """
     global name_first_file_comparison
     # Получаем путь к файлу
-    name_first_file_comparison = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    name_first_file_comparison = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('Excel files', '*.xlsm'),('all files', '*.*')))
 
 
 def select_second_comparison():
@@ -422,7 +422,7 @@ def select_second_comparison():
     global name_second_file_comparison
     # Получаем путь к файлу
     name_second_file_comparison = filedialog.askopenfilename(
-        filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+        filetypes=(('Excel files', '*.xlsx'), ('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_end_folder_comparison():
@@ -555,7 +555,7 @@ def select_file_split():
     """
     global file_data_split
     # Получаем путь к файлу
-    file_data_split = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    file_data_split = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_end_folder_split():
@@ -604,7 +604,7 @@ def select_prep_file():
     """
     global glob_prep_file
     # Получаем путь к файлу
-    glob_prep_file = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    glob_prep_file = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'),('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_end_folder_prep():
@@ -624,7 +624,11 @@ def processing_preparation_file():
         # name_sheet = var_name_sheet_prep.get() # получаем название листа
         checkbox_dupl = mode_dupl_value.get()
         checkbox_mix_alphabets = mode_mix_alphabets.get()
-        prepare_list(glob_prep_file, glob_path_to_end_folder_prep, checkbox_dupl, checkbox_mix_alphabets)
+        checkbox_many_dupl = mode_many_dupl_value.get()
+        numbers_columns_many_dupl = entry_many_dupl_value.get()
+
+
+        prepare_list(glob_prep_file, glob_path_to_end_folder_prep, checkbox_dupl, checkbox_mix_alphabets,checkbox_many_dupl,numbers_columns_many_dupl)
 
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
@@ -873,7 +877,7 @@ def open_libraries():
 
 if __name__ == '__main__':
     window = Tk()
-    window.title('Веста Обработка таблиц и создание документов ver 1.61')
+    window.title('Веста Обработка таблиц и создание документов ver 1.62')
     # Устанавливаем размер и положение окна
     set_window_size(window)
     # window.geometry('774x760')
@@ -908,7 +912,8 @@ if __name__ == '__main__':
                                   text='Очистка от лишних пробелов и символов; поиск пропущенных значений\n в колонках с персональными данными,'
                                        '(ФИО,паспортные данные,\nтелефон,e-mail,дата рождения,ИНН)\n преобразование СНИЛС в формат ХХХ-ХХХ-ХХХ ХХ.\n'
                                        'Создание списка дубликатов по каждой колонке.\n'
-                                       'Поиск со смешаным написанием русских и английских букв.\n'
+                                       'Создание списка дубликатов по нескольким колонкам.\n'
+                                       'Поиск со смешанным написанием русских и английских букв.\n'
                                        'ПРИМЕЧАНИЯ\n'
                                        'Данные обрабатываются С ПЕРВОГО ЛИСТА В ФАЙЛЕ !!!\n'
                                        'Заголовок таблицы должен занимать только первую строку!\n'
@@ -964,6 +969,33 @@ if __name__ == '__main__':
                                            offvalue='No',
                                            onvalue='Yes')
     chbox_mode_mix_alphabets.pack(padx=10, pady=10)
+
+
+    # Создаем переменную для хранения переключателя поиска дублей по нескольким колонкам
+    mode_many_dupl_value = StringVar()
+    mode_many_dupl_value.set('No')  # по умолчанию поиска поиск дубликатов по множеству колонок не будет
+    chbox_many_dupl_value = Checkbutton(frame_data_prep,
+                                              text='Поставьте галочку, если вам нужно искать дубликаты по нескольким колонкам',
+                                              variable=mode_many_dupl_value,
+                                              offvalue='No',
+                                              onvalue='Yes')
+    chbox_many_dupl_value.pack()
+
+    # Создаем поле для ввода
+    # Определяем текстовую переменную
+    entry_many_dupl_value = StringVar()
+    # Описание поля
+    label_many_dupl_value = Label(frame_data_prep,
+                                text='Введите через запятую порядковые номера колонок по которым нужно искать дубликаты.\n'
+                                     'Например: 4,15,8. Порядковые номера начинаются с 1. Введенные числа не должны превышать количество колонок в таблице.\n'
+                                     'Сортировка дубликатов производится по колонке чей порядковый номер указан первым.')
+    label_many_dupl_value.pack()
+    # поле ввода
+    entry_value_many_dupl = Entry(frame_data_prep, textvariable=entry_many_dupl_value, width=30)
+    entry_value_many_dupl.pack(ipady=5)
+
+
+
 
     # Создаем кнопку очистки
     btn_choose_processing_prep = Button(tab_preparation, text='3) Выполнить обработку', font=('Arial Bold', 20),
@@ -1924,7 +1956,7 @@ if __name__ == '__main__':
 
     lbl_about = Label(about_frame_description,
                       text="""Веста - Программа для обработки таблиц и создания однотипных документов
-                           Версия 1.61
+                           Версия 1.62
                            Язык программирования - Python 3\n
                            Используемая лицензия BSD-2-Clause\n
                            Copyright (c) <2024> <Будаев Олег Тимурович>

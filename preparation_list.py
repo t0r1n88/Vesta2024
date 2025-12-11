@@ -783,15 +783,26 @@ def prepare_list(file_data:str,path_end_folder:str,checkbox_dupl:str,checkbox_mi
 
     except UnboundLocalError:
         pass
+
+    except NoMoreNumberColumn:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'Введите числа через запятую. Например 3,8,25,1')
+        logging.exception('AN ERROR HAS OCCURRED')
+
+    except NotNumberColumn:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'Введите числа не превышающие количество колонок в таблице которую вы хотите обработать')
+        logging.exception('AN ERROR HAS OCCURRED')
+
     except NameError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
                              f'Выберите файлы с данными и папку куда будет генерироваться файл')
         logging.exception('AN ERROR HAS OCCURRED')
 
-    # except ValueError as e:
-    #     messagebox.showerror('Веста Обработка таблиц и создание документов',
-    #                          f'Ошибка при обработке значения {e.args}')
-    #     logging.exception('AN ERROR HAS OCCURRED')
+    except ValueError as e:
+        messagebox.showerror('Веста Обработка таблиц и создание документов',
+                             f'Ошибка при обработке значения {e.args}')
+        logging.exception('AN ERROR HAS OCCURRED')
 
     except FileNotFoundError:
         messagebox.showerror('Веста Обработка таблиц и создание документов',
