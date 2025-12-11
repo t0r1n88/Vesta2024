@@ -133,7 +133,7 @@ def select_file_params_calculate_data():
     """
     global name_file_params_calculate_data
     name_file_params_calculate_data = filedialog.askopenfilename(
-        filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+        filetypes=(('Excel files', '*.xlsx'), ('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_files_data_calculate_data():
@@ -210,7 +210,7 @@ def select_standard_file_merger():
     """
     global file_standard_merger
     file_standard_merger = filedialog.askopenfilename(
-        filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+        filetypes=(('Excel files', '*.xlsx'), ('Excel files', '*.xlsm'),('all files', '*.*')))
 
 
 def merge_tables():
@@ -464,7 +464,7 @@ def select_data_decl_case():
     """
     global data_decl_case
     # Получаем путь к файлу
-    data_decl_case = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    data_decl_case = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_end_folder_decl_case():
@@ -503,7 +503,7 @@ def select_first_diffrence():
     """
     global data_first_diffrence
     # Получаем путь к файлу
-    data_first_diffrence = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    data_first_diffrence = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'),('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_second_diffrence():
@@ -513,7 +513,7 @@ def select_second_diffrence():
     """
     global data_second_diffrence
     # Получаем путь к файлу
-    data_second_diffrence = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    data_second_diffrence = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'),('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_end_folder_diffrence():
@@ -648,7 +648,7 @@ def select_file_svod():
     """
     global data_svod
     # Получаем путь к файлу
-    data_svod = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+    data_svod = filedialog.askopenfilename(filetypes=(('Excel files', '*.xlsx'), ('Excel files', '*.xlsm'),('all files', '*.*')))
 
 
 def select_end_folder_svod():
@@ -689,7 +689,7 @@ def select_file_params_counting_report():
     global name_file_params_counting_report
     # Получаем путь к файлу
     name_file_params_counting_report = filedialog.askopenfilename(
-        filetypes=(('Excel files', '*.xlsx'), ('all files', '*.*')))
+        filetypes=(('Excel files', '*.xlsx'),('Excel files', '*.xlsm'), ('all files', '*.*')))
 
 
 def select_folder_data_counting_report():

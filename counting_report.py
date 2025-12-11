@@ -119,7 +119,7 @@ def counting_table_report(file_params:str, report_dir:str,path_end_folder:str):
         for dirpath, dirnames, filenames in os.walk(report_dir):
             lst_files.extend(filenames)
         # отбираем файлы
-        lst_xlsx = [file for file in lst_files if not file.startswith('~$') and file.endswith('.xlsx')]
+        lst_xlsx = [file for file in lst_files if not file.startswith('~$') and (file.endswith('.xlsx') or file.endswith('.xlsm'))]
         if len(lst_xlsx) == 0:
             raise NotFile
         # если нужно обработать только один файл
@@ -166,8 +166,11 @@ def counting_table_report(file_params:str, report_dir:str,path_end_folder:str):
                         error_df = pd.concat([error_df, temp_error_df], axis=0,
                                              ignore_index=True)
                         continue
-                    if not file.startswith('~$') and file.endswith('.xlsx'):
-                        name_file = file.split('.xlsx')[0]
+                    if not file.startswith('~$') and (file.endswith('.xlsx') or file.endswith('.xlsm')):
+                        if file.endswith('.xlsx'):
+                            name_file = file.split('.xlsx')[0].strip()
+                        else:
+                            name_file = file.split('.xlsm')[0].strip()
                         print(name_file) # обрабатываемый файл
                         try:
                             wb = openpyxl.load_workbook(f'{dirpath}/{file}',data_only=True) # открываем файл
@@ -321,8 +324,11 @@ def counting_table_report(file_params:str, report_dir:str,path_end_folder:str):
                         error_df = pd.concat([error_df, temp_error_df], axis=0,
                                              ignore_index=True)
                         continue
-                    if not file.startswith('~$') and file.endswith('.xlsx'):
-                        name_file = file.split('.xlsx')[0]
+                    if not file.startswith('~$') and (file.endswith('.xlsx') or file.endswith('.xlsm')):
+                        if file.endswith('.xlsx'):
+                            name_file = file.split('.xlsx')[0].strip()
+                        else:
+                            name_file = file.split('.xlsm')[0].strip()
                         print(name_file) # обрабатываемый файл
                         try:
                             wb = openpyxl.load_workbook(f'{dirpath}/{file}',data_only=True) # открываем файл

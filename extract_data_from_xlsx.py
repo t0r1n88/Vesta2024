@@ -149,7 +149,7 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
         for dirpath, dirnames, filenames in os.walk(files_calculate_data):
             lst_files.extend(filenames)
         # отбираем файлы
-        lst_xlsx = [file for file in lst_files if not file.startswith('~$') and file.endswith('.xlsx')]
+        lst_xlsx = [file for file in lst_files if not file.startswith('~$') and (file.endswith('.xlsx') or file.endswith('.xlsm'))]
 
         quantity_files = len(lst_xlsx)  # считаем сколько xlsx файлов в папке
         current_time = time.strftime('%H_%M_%S')
@@ -195,8 +195,11 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
             check_df = pd.DataFrame(columns=lst_cols)
             for dirpath, dirnames, filenames in os.walk(files_calculate_data):
                 for file in filenames:
-                    if not file.startswith('~$') and file.endswith('.xlsx'):
-                        name_file = file.split('.xlsx')[0]
+                    if not file.startswith('~$') and (file.endswith('.xlsx') or file.endswith('.xlsm')):
+                        if file.endswith('.xlsx'):
+                            name_file = file.split('.xlsx')[0].strip()
+                        else:
+                            name_file = file.split('.xlsm')[0].strip()
                         print(name_file) # обрабатываемый файл
 
                         try:
@@ -325,8 +328,11 @@ def extract_data_from_hard_xlsx(mode_text, name_file_params_calculate_data, file
             check_df.insert(0, 'Название файла', '')
             for dirpath, dirnames, filenames in os.walk(files_calculate_data):
                 for file in filenames:
-                    if not file.startswith('~$') and file.endswith('.xlsx'):
-                        name_file = file.split('.xlsx')[0]
+                    if not file.startswith('~$') and (file.endswith('.xlsx') or file.endswith('.xlsm')):
+                        if file.endswith('.xlsx'):
+                            name_file = file.split('.xlsx')[0].strip()
+                        else:
+                            name_file = file.split('.xlsm')[0].strip()
                         print(name_file) # обрабатываемый файл
                         # Проверяем чтобы файл не был резервной копией или файлом с другим расширением.
                         # Создаем словарь для создания строки которую мы будем добавлять в проверочный датафрейм

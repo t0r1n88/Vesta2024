@@ -93,10 +93,12 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
             if checkbox_harvest == 0:  # Вариант объединения по названию листов
                 for dirpath, dirnames, filenames in os.walk(dir_name):
                     for filename in filenames:
-                        if (filename.endswith('.xlsx') and not filename.startswith(
-                                '~$')) and filename != name_file_standard_merger:  # не обрабатываем эталонный файл
+                        if ((filename.endswith('.xlsx') or filename.endswith('.xlsm')) and not filename.startswith('~$')) and filename != name_file_standard_merger:  # не обрабатываем эталонный файл
                             # Получаем название файла без расширения
-                            name_file = filename.split('.xlsx')[0]
+                            if filename.endswith('.xlsx'):
+                                name_file = filename.split('.xlsx')[0].strip()
+                            else:
+                                name_file = filename.split('.xlsm')[0].strip()
                             print(name_file)
                             try:
                                 temb_wb = load_workbook(
@@ -204,10 +206,13 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
             elif checkbox_harvest == 1:  # Вариант объединения по порядку
                 for dirpath, dirnames, filenames in os.walk(dir_name):
                     for filename in filenames:
-                        if (filename.endswith('.xlsx') and not filename.startswith(
+                        if ((filename.endswith('.xlsx') or filename.endswith('.xlsm')) and not filename.startswith(
                                 '~$')) and filename != name_file_standard_merger:  # не обрабатываем эталонный файл
                             # Получаем название файла без расширения
-                            name_file = filename.split('.xlsx')[0]
+                            if filename.endswith('.xlsx'):
+                                name_file = filename.split('.xlsx')[0].strip()
+                            else:
+                                name_file = filename.split('.xlsm')[0].strip()
                             print(name_file)
                             try:
                                 temb_wb = load_workbook(
@@ -320,10 +325,13 @@ def union_tables(checkbox_harvest: int,merger_entry_skip_rows: int, file_standar
                 # начинаем обработку
                 for dirpath, dirnames, filenames in os.walk(dir_name):
                     for filename in filenames:
-                        if (filename.endswith('.xlsx') and not filename.startswith(
+                        if ((filename.endswith('.xlsx') or filename.endswith('.xlsm')) and not filename.startswith(
                                 '~$')) and filename != name_file_standard_merger:  # не обрабатываем эталонный файл
                             # Получаем название файла без расширения
-                            name_file = filename.split('.xlsx')[0]
+                            if filename.endswith('.xlsx'):
+                                name_file = filename.split('.xlsx')[0].strip()
+                            else:
+                                name_file = filename.split('.xlsm')[0].strip()
                             print(name_file)
                             try:
                                 temb_wb = load_workbook(
