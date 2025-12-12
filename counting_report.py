@@ -317,7 +317,7 @@ def counting_table_report(file_params:str, report_dir:str,path_end_folder:str):
                     if file.endswith('.xls') or file.endswith('.ods'):
                         temp_error_df = pd.DataFrame(
                             data=[[f'{file}',
-                                   f'Программа обрабатывает файлы с разрешением xlsx. XLS и ODS файлы не обрабатываются !'
+                                   f'Программа обрабатывает файлы с разрешением xlsx, xlsm. XLS и ODS файлы не обрабатываются !'
                                    ]],
                             columns=['Название файла',
                                      'Описание ошибки'])
