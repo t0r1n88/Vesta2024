@@ -33,6 +33,21 @@ class NotFile(Exception):
     """
     pass
 
+def convert_to_float_not_spaces(value):
+    """
+    Функция для конвертации числа с учетом случаев числа с пробелами
+    :param value:
+    """
+    try:
+        return float(value)
+    except:
+        result = re.findall(r'\d',str(value))
+        if result:
+            return float(''.join(result))
+        else:
+            return 0
+
+
 
 
 
@@ -402,7 +417,7 @@ def counting_table_report(file_params:str, report_dir:str,path_end_folder:str):
 
                             # Преобразуем список в DataFrame
                             temp_df = pd.DataFrame(data,columns=range(value['Количество колонок']))
-                            temp_df = temp_df.applymap(convert_to_float)
+                            temp_df = temp_df.applymap(convert_to_float_not_spaces)
                             if len(value['Данные']) == 0:
                                 value['Данные'] = pd.concat([value['Данные'],temp_df])
                             else:
@@ -460,10 +475,10 @@ if __name__ == '__main__':
     main_file_params = 'data/тест/Параметры отчета Пример 1.xlsx'
     main_data_folder = 'data/Табличные отчеты'
     main_data_folder = 'data/тест/Табличные отчеты Пример 1'
-    main_file_params = 'data/Параметры отчета Пример 1.xlsx'
+    main_file_params = 'data/Параметры СПО-1.xlsx'
     main_data_folder = 'data/Табличные отчеты'
-    main_data_folder = 'data/Табличные отчеты Пример 1'
-    main_path_end_folder = 'data/СБОР результат'
+    main_data_folder = 'data/Excel 2024'
+    main_path_end_folder = 'data/Результат'
 
     counting_table_report(main_file_params,main_data_folder,main_path_end_folder)
 
