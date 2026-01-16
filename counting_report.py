@@ -478,6 +478,7 @@ if __name__ == '__main__':
     main_file_params = 'data/Параметры СПО-1.xlsx'
     main_data_folder = 'data/Табличные отчеты'
     main_data_folder = 'data/Excel 2024'
+    main_data_folder = 'data/Проверка/88'
     main_path_end_folder = 'data/Результат'
 
     counting_table_report(main_file_params,main_data_folder,main_path_end_folder)
